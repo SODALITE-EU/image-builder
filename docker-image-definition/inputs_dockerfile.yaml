@@ -1,15 +1,15 @@
 source:
   type: dockerfile
-  url: file:///home/trajbaric/projects/SODALITE/image_builder_context/Dockerfile
+  url: file:///path/to/Dockerfile
   build_context:
     - build_context:
-        url: https://gitlab.xlab.si/mihael_trajbaric/image_builder_example_build_context.git
-        username: mihael_trajbaric
-        password: AkcBaezWvvY6NPfniT8P
+        url: https://url/to/git/repo.git
+        username: my_username
+        password: my_password_or_token
     - Local_path:
-        path: /home/trajbaric/projects/SODALITE/image_builder_context
+        path: /path/to/local/build/context
 
 target:
-  registry_ip: 10.10.43.54
-  image_name: image_name
-  image_tag: beta2
+  registry_ip: 10.10.42.42
+  image_name: my_image_name
+  image_tag: my_image_tag
