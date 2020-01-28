@@ -1,0 +1,123 @@
+tosca_definitions_version: tosca_simple_yaml_1_2
+
+data_types:
+  mytypes.Source:
+    description: Docker image source. Could be either tar archive or Dockerfile with optional build context
+    properties:
+      type:
+        type: string
+        description: One of (dockerfile, tar)
+      url:
+        type: string
+        description: Url of dockerfile or tarfile.
+        required: True
+      username:
+        type: string
+        required: false
+        default: ""
+        description: Username for authentication (if needed) for dockerfile or tarfile
+      password:
+        type: string
+        required: false
+        default: ""
+        description: Password for authentication (if needed) for dockerfile or tarfile
+      build_context:
+        type: list
+        required: false
+        default: []
+        description: List of build context elements. Can be used with type -> dockerfile.
+        entry_schema:
+          type: mytypes.BuildContextElement
+
+
+  mytypes.BuildContextElement:
+    description: Git repo or local dir with buildcontext for dockerfile. Name of element is mapped to target dir name.
+
+  mytypes.BuildContextDir:
+    description:  Local dir with build context for dockerfile. Name of element is mapped to target dir name.
+    derived_from: mytypes.BuildContextElement
+    properties:
+      path:
+        type: string
+        description: Path to dir with build context
+        requred: true
+
+  mytypes.BuildContextGit:
+    description: Git repo with buildcontext for dockerfile. Name of element is mapped to target dir name.
+    derived_from: mytypes.BuildContextElement
+    properties:
+      url:
+        type: string
+        description: Url of git repo
+        requred: true
+      username:
+        type: string
+        required: false
+        default: ""
+        description: Username for authentication (if needed) for git repo
+      password:
+        type: string
+        required: false
+        default: ""
+        description: Password for authentication (if needed) for git repo
+
+  mytypes.Target:
+    description: Destination for built image.
+    properties:
+      registry_ip:
+        type: string
+        required: true
+        description: ip of docker registry
+      image_name:
+        type: string
+        required: true
+        description: Target docker image name.
+      image_tag:
+        type: string
+        required: true
+        description: Target docker image tag.
+
+node_types:
+  my.nodes.image.builder:
+    derived_from: tosca.nodes.Compute
+    properties:
+      source:
+        type: mytypes.Source
+        required: true
+        description: Source for image.
+
+      target:
+        type: mytypes.Target
+        required: true
+        description: Target name for docker image
+    interfaces:
+      Standard:
+        type: tosca.interfaces.node.lifecycle.Standard
+        create:
+          inputs:
+            source:  { default: { get_property: [ SELF, source ] } }
+            target:  { default: { get_property: [ SELF, target ] } }
+          implementation: playbooks/builder/build.yml
+topology_template:
+
+  inputs:
+    source:
+      type: mytypes.Source
+
+    target:
+      type: mytypes.Target
+
+  node_templates:
+    my-workstation:
+      type: tosca.nodes.Compute
+      attributes:
+        private_address: localhost
+        public_address: localhost
+
+    image-builder:
+      type: my.nodes.image.builder
+      requirements:
+        - host: my-workstation
+      properties:
+        source: { get_input: source }
+        target: { get_input: target }

@@ -1,0 +1,8 @@
+source:
+  type: tar
+  url: file:///home/trajbaric/projects/SODALITE/xlab/src/wp5/xOpera/REST_API/Builds/xopera_rest.tar
+
+target:
+  registry_ip: 172.16.117.38
+  image_name: image_from_tar
+  image_tag: test
