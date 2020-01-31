@@ -1,6 +1,15 @@
 # image-builder
 Image builder contains components needed to build images within the SODALITE platform.
+## docker-image-definition
+docker-image-definition is a TOSCA blueprint, based on tosca_simple_yaml_1_2.
+### Running using xOpera
+Within SODALITE platform, it is executed with [xOpera orchestrator](https://github.com/xlab-si/xopera-opera).
+If using xOpera 1.7 via CLI:
+    
+    sudo opera -i inputs.yaml image_builder docker_image_definition.yaml    
 
+### Sample inputs
+Inputs from [build from dockerfile](docker-image-definition/inputs_dockerfile.yaml) or [loading image from tar archive](docker-image-definition/inputs_tar.yaml).
 
 ## REST API
 
