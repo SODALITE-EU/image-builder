@@ -1,0 +1,83 @@
+import os
+import shutil
+import subprocess
+import uuid
+from distutils import dir_util
+
+import yaml
+
+from app.main.service import ImageBuilderConfig
+from ..config import registry_ip
+
+
+def validate(data: dict):
+    source_type = 'dockerfile' if data['source_type'].casefold() == 'dockerfile' else 'tar' \
+        if data['source_type'].casefold() == 'tar' else None
+    if not source_type:
+        print('invalid source_type')
+        return None
+    url = data['source_url']
+    url_username = data.get('source_username', None)
+    url_pass = data.get('source_password', None)
+    target_registry_ip = registry_ip
+    image_name = data['target_image_name']
+    image_tag = data['target_image_tag']
+
+    build_context = [{element['dir_name']: {'url': element.get('url'), 'username': element.get('username', None),
+                                            'password': element.get('password', None)}} for element in
+                     data['build_context']]
+
+    return {
+        "source": {
+            "type": source_type,
+            "url": url,
+            "username": url_username,
+            "password": url_pass,
+            "build_context": build_context
+        },
+        "target": {
+            "registry_ip": target_registry_ip,
+            "image_name": image_name,
+            "image_tag": image_tag
+        }
+    }
+
+
+def read_input(path):
+    return yaml.safe_load(open(path, 'r'))
+
+
+def build_image(data: dict):
+
+    basedir = os.path.abspath(os.path.dirname(__file__))
+
+    session_token = str(uuid.uuid4())
+
+    logfile = ImageBuilderConfig.logfile_name
+    timestamp_start = ImageBuilderConfig.datetime_now_to_string()
+    run_path = f'{basedir}/image_builder/run/{session_token}'
+    TOSCA_path = f'{basedir}/image_builder/TOSCA'
+    _input = validate(data)
+
+    shutil.rmtree(run_path, ignore_errors=True)
+    os.makedirs(run_path)
+    dir_util.copy_tree(TOSCA_path, run_path)
+
+    with open(f'{run_path}/inputs.yaml', 'w') as inputs:
+        inputs.write(yaml.dump(_input))
+
+    os.chdir(basedir)
+
+    command = ['./image_builder/scripts/deploy.sh', run_path, session_token, logfile, timestamp_start]
+    subprocess.Popen(command)
+
+    response_object = {
+        'status': 'Accepted',
+        'message': 'Successfully submitted docker image building job.',
+        'session_token': session_token
+    }
+    return response_object, 202
+
+
+if __name__ == '__main__':
+    build_image(dict())

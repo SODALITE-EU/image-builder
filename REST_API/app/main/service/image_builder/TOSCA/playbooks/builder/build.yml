@@ -1,0 +1,138 @@
+---
+- hosts: localhost
+  become: yes
+
+  tasks:
+    - name: Configure image_builder
+      set_fact:
+        workdir: "/home/image_builder/{{ 99999999 | random | to_uuid }}"
+        dockerfile_type: dockerfile
+        tar_type: tar
+
+
+    - name: validate input data
+      assert:
+        that:
+          - source.type == dockerfile_type or source.type == tar_type
+          - source.url is defined and source.url is not none
+          - (source.username is defined and source.username is not none) == (source.password is defined and source.password is not none)
+          - target.registry_ip is defined and target.registry_ip is not none
+          - target.image_name is defined and target.image_name is not none
+          - target.image_tag is defined and target.image_tag is not none
+
+    - name: set url
+      set_fact:
+        url: "{{ source.url }}"
+
+    - name: Create workdir
+      file:
+        path: "{{ workdir }}"
+        state: directory
+
+    - name: Authenticate url
+      set_fact:
+        url: "https://{{ source.username }}:{{ source.password }}@{{ source.url[8:] }}"
+      when: source.username is defined and source.username is not none and source.url[:8] == "https://"
+
+    - name: Download Dockerfile
+      get_url:
+        url: "{{ source.url }}"
+        dest: "{{ workdir }}/Dockerfile"
+      when: source.type == dockerfile_type
+
+    - name: set empty build_context
+      set_fact:
+        build_context: "{{ source.build_context | default([]) }}"
+
+    - name: Add local build context for Dockerfile
+      copy:
+        src: "{{ path }}"
+        dest: "{{ workdir }}/{{ dir_name }}"
+      vars:
+        item_as_item: "{{ item | dict2items | first }}"
+        dir_name: "{{ item_as_item.key }}"
+        properties: "{{ item_as_item.value }}"
+        path: "{{ properties.path if properties.path[-1] == '/' else properties.path+'/' }}"
+      when: source.type == dockerfile_type and properties.path is defined
+      loop: "{{ build_context }}"
+
+    - name: Add build context for Dockerfile from git
+      git:
+        repo: "{{ git_url }}"
+        dest: "{{ workdir }}/{{ dir_name }}"
+      vars:
+        item_as_item: "{{ item | dict2items | first }}"
+        dir_name: "{{ item_as_item.key }}"
+        properties: "{{ item_as_item.value }}"
+        authentication: "{{ properties.password is not none and properties.username is not none }}"
+        url_authentication: "https://{{ properties.username }}:{{ properties.password }}@{{ properties.url[8:] }}"
+        git_url: "{{ url_authentication if authentication == true else properties.url }}"
+      when: source.type == dockerfile_type and properties.url is defined
+      loop: "{{ build_context }}"
+
+    - name: Download archive
+      get_url:
+        url: "{{ source.url }}"
+        dest: "{{ workdir }}/archive"
+      when: source.type == tar_type
+      register: msg
+
+    - set_fact:
+        tar_path: "{{ msg.dest }}"
+      when: source.type == tar_type
+
+    - name: Create workdir for archive extraction
+      file:
+        path: "{{ workdir }}/tmp"
+        state: directory
+      when: source.type == tar_type
+
+    - name: Unarchive a file that is already on the remote machine
+      unarchive:
+        src: "{{ tar_path }}"
+        dest: "{{ workdir }}/tmp"
+        remote_src: yes
+      when: source.type == tar_type
+
+    - shell: "cat {{ workdir }}/tmp/manifest.json"
+      register: data
+      when: source.type == tar_type
+
+    - name: Get image name
+      set_fact:
+        origin_image_name: "{{ image_facts.RepoTags[0] }}"
+      vars:
+        image_facts: "{{ data.stdout | from_json | first }}"
+      when: source.type == tar_type
+
+    - name: Remove tmp
+      file:
+        path: "{{ workdir }}/tmp"
+        state: absent
+      when: source.type == tar_type
+
+    - name: Build image and push it
+      docker_image:
+        source: build
+        build:
+          path: "{{ workdir }}"
+          pull: yes
+        name: "{{ target.image_name }}"
+        force_source: yes
+        repository: "{{ target.registry_ip }}/{{ target.image_name }}:{{ target.image_tag }}"
+        push: yes
+      when: source.type == dockerfile_type
+
+    - name: Load image from archive and push it
+      docker_image:
+        name: "{{ origin_image_name }}"
+        load_path: "{{ tar_path }}"
+        source: load
+        repository: "{{ target.registry_ip }}/{{ target.image_name }}:{{ target.image_tag }}"
+        push: yes
+      when: source.type == tar_type
+
+    - name: Clean workdir
+      file:
+        state: absent
+        path: "{{ workdir }}"
