@@ -9,7 +9,7 @@ If using xOpera 1.7 via CLI:
     sudo opera -i inputs.yaml image_builder docker_image_definition.yaml    
 
 ### Sample inputs
-Inputs from [build from dockerfile](docker-image-definition/inputs_dockerfile.yaml) or [loading image from tar archive](docker-image-definition/inputs_tar.yaml).
+Inputs for [building from dockerfile](docker-image-definition/inputs_dockerfile.yaml) or [loading image from tar archive](docker-image-definition/inputs_tar.yaml).
 
 ## REST API
 
@@ -27,21 +27,21 @@ See [docker docs](https://docs.docker.com/engine/security/certificates/) for mor
 ### Config
 REST API's configuration can be set by setting following environmental variables:
     
-    - SECRET_KEY: key to be used for encoding / decoding Bearer tokens. Default: my_precious_secret_key
+    - SECRET_KEY: key to be used for encoding / decoding Bearer tokens. Default: "my_precious_secret_key"
     - SESSION_TIMEOUT: time (in minutes) before Bearer token expires. Default: 1440 (1 day)
     - REGISTRY_IP: IP of docker registry. Default: localhost
     - SQLALCHEMY_DATABASE_URI: link to database. If left unset, local SQLITE instance will be configured and used.
     
-### Install and RUN
-#### Run in venv (optional, but recommended)
+### Install and run
+#### Run in venv (optional, recommended)
 - Installing: `python3 -m pip install --user virtualenv`
 - Creating: `python3 -m venv [venv_name]`
 - Activating: `source [venv_name]/bin/activate`
 
 
-Your python venv must be active during every stage of installation and run.
+Your python venv must be activated before installation and also before every run.
 
-#### Quick install and RUN
+#### Quick install and run
 To install, test and run, simply run:
 
     make all
