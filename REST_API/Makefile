@@ -1,4 +1,4 @@
-.PHONY: clean system-packages python-packages activate-venv install tests run all database-all database-upgrade database-init docker
+.PHONY: clean system-packages python-packages install tests run all database database-upgrade database-init docker
 
 clean:
 	sudo find . -type f -name '*.pyc' -delete
@@ -7,35 +7,27 @@ clean:
 
 system-packages:
 	sudo apt update
-	sudo apt install python3-venv python3-wheel python-wheel-common -y
-	python3 -m venv .venv
-	# sudo apt install nginx -y
-	# sudo ufw allow 'Nginx Full'
+	sudo apt install python3-pip -y
 
-python-packages: activate-venv
-	pip install --upgrade pip
-	pip install -r requirements.txt
+python-packages:
+	pip3 install --upgrade pip
+	pip3 install -r requirements.txt
 
-activate-venv:
-	. .venv/bin/activate
+install: system-packages python-packages database
 
-install: system-packages python-packages database-all
-
-tests: activate-venv
-	python manage.py test
+tests:
+	python3 manage.py test
  
-run: activate-venv
-	python manage.py run
+run:
+	python3 manage.py run
 
-database-init: activate-venv
-	python manage.py db init
+database-init:
+	python3 manage.py db init
 
-database-upgrade: activate-venv
-	python manage.py db migrate
-	python manage.py db upgrade
+database-upgrade:
+	python3 manage.py db migrate
+	python3 manage.py db upgrade
 
-database-all: database-init database-upgrade
+database: database-init database-upgrade
 
-all: clean install database-all tests run
-
-docker: database-all tests run
+all: clean install database tests run
