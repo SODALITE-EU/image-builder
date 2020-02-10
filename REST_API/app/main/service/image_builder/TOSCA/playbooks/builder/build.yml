@@ -42,7 +42,7 @@
 
     - name: set empty build_context
       set_fact:
-        build_context: "{{ source.build_context | default([]) }}"
+        build_context: "{{ source.build_context | default([], true) }}"
 
     - name: Add local build context for Dockerfile
       copy:
