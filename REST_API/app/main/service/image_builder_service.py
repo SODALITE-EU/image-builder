@@ -22,10 +22,12 @@ def validate(data: dict):
     target_registry_ip = registry_ip
     image_name = data['target_image_name']
     image_tag = data['target_image_tag']
-
-    build_context = [{element['dir_name']: {'url': element.get('url'), 'username': element.get('username', None),
-                                            'password': element.get('password', None)}} for element in
-                     data['build_context']]
+    try:
+        build_context = [{element['dir_name']: {'url': element.get('url'), 'username': element.get('username', None),
+                                                'password': element.get('password', None)}} for element in
+                         data['build_context']]
+    except KeyError:
+        build_context = None
 
     return {
         "source": {
