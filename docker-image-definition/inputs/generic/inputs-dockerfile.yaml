@@ -1,6 +1,8 @@
 source:
   type: dockerfile
   url: file:///path/to/Dockerfile
+  username: my_optional_username
+  password: my_optional_password
   build_context:
     - build_context:
         url: https://url/to/git/repo.git
@@ -10,6 +12,6 @@ source:
         path: /path/to/local/build/context
 
 target:
-  registry_ip: 10.10.42.42
+  registry_ip: my_registry_ip
   image_name: my_image_name
   image_tag: my_image_tag

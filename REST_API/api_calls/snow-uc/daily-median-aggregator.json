@@ -1,0 +1,15 @@
+
+{
+  "source_type": "Dockerfile",
+  "source_url": "https://raw.githubusercontent.com/SODALITE-EU/iac-management/master/use-cases/snow-uc/build-images/components/daily-median-aggregator/Dockerfile",
+  "build_context": [
+    {
+      "dir_name": "SnowWatch-SODALITE",
+      "url": "https://gitlab.com/wds-co/SnowWatch-SODALITE",
+      "username": "my_username",
+      "password": "my_password"
+    }
+  ],
+  "target_image_name": "snow-daily-median-aggregator",
+  "target_image_tag": "latest"
+}

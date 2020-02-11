@@ -1,0 +1,8 @@
+{
+  "source_type": "tar",
+  "source_url": "https://link/to/my_image.tar",
+  "source_username": "my_optional_username",
+  "source_password": "my_optional_password",
+  "target_image_name": "my_image_name",
+  "target_image_tag": "my_image_tag"
+}

@@ -1,0 +1,6 @@
+{
+  "source_type": "dockerfile",
+  "source_url": "https://raw.githubusercontent.com/SODALITE-EU/iac-management/master/use-cases/snow-uc/build-images/components/skyline-alignment/Dockerfile",
+  "target_image_name": "snow-skyline-alignment",
+  "target_image_tag": "latest"
+}
