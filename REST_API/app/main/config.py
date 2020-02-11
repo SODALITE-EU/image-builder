@@ -48,3 +48,7 @@ config_by_name = dict(
 key = Config.SECRET_KEY
 session_timeout = Config.SESSION_TIMEOUT
 registry_ip = Config.REGISTRY_IP
+print(f'Config:\n'
+      f'SESSION_TIMEOUT: {session_timeout} minutes\n'
+      f'REGISTRY_IP: {registry_ip}\n'
+      f'SECRET_KEY: {"default" if key == "my_precious_secret_key" else "****"}')

@@ -31,4 +31,4 @@ def check_log(session_token: str):
         'status': 'fail',
         'message': 'Logfile not found.'
     }
-    return response_object, 400
+    return response_object, 404

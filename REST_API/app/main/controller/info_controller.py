@@ -13,6 +13,8 @@ info_params = InfoDto.check_info
 class Status(Resource):
     @token_required
     @api.response(201, 'Success')
+    @api.response(202, 'Building')
+    @api.response(500, 'Job failed')
     @api.doc('check status of image building job')  # , security=None)
     def get(self, session_token):
         """check status"""
@@ -24,7 +26,8 @@ class Status(Resource):
 @api.param('session_token', 'Token of image-building session')
 class Log(Resource):
     @token_required
-    @api.response(201, 'Success')
+    @api.response(200, 'Success')
+    @api.response(404, 'Logfile not found')
     @api.doc('check log of image building job')  # , security=None)
     def get(self, session_token):
         """check log"""
