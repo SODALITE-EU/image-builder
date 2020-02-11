@@ -9,7 +9,7 @@ If using xOpera 1.7 via CLI:
     sudo opera -i inputs.yaml image_builder docker_image_definition.yaml    
 
 ### Sample inputs
-Inputs for [building from dockerfile](docker-image-definition/inputs_dockerfile.yaml) or [loading image from tar archive](docker-image-definition/inputs_tar.yaml).
+Inputs can be found in [docker-image-definition/inputs](docker-image-definition/inputs).
 
 ## REST API
 
@@ -33,6 +33,7 @@ REST API's configuration can be set by setting following environmental variables
     - SQLALCHEMY_DATABASE_URI: link to database. If left unset, local SQLITE instance will be configured and used.
     
 ### Install and run
+
 #### Run in venv (optional, recommended)
 - Installing: `python3 -m pip install --user virtualenv`
 - Creating: `python3 -m venv [venv_name]`
@@ -54,6 +55,8 @@ or run stages separately:
     make tests
     make run
     
+### Sample JSON payloads
+Sample JSON payloads to be used with `/build/` endpoint can be found in [JSON-build-params](REST_API/JSON-build-params)
 
 
 
