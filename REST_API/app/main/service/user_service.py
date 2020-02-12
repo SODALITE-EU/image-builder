@@ -7,16 +7,25 @@ from app.main.model.user import User
 
 def save_new_user(data):
     user = User.query.filter_by(email=data['email']).first()
+    user_username = User.query.filter_by(username=data['username']).first()
     if not user:
-        new_user = User(
-            public_id=str(uuid.uuid4()),
-            email=data['email'],
-            username=data['username'],
-            password=data['password'],
-            registered_on=datetime.datetime.utcnow()
-        )
-        save_changes(new_user)
-        return generate_token(new_user)
+        if not user_username:
+            new_user = User(
+                public_id=str(uuid.uuid4()),
+                email=data['email'],
+                username=data['username'],
+                password=data['password'],
+                registered_on=datetime.datetime.utcnow()
+            )
+            save_changes(new_user)
+            return generate_token(new_user)
+        else:
+            response_object = {
+                'status': 'fail',
+                'message': 'Username taken. Please pick another username.',
+            }
+            return response_object, 409
+
     else:
         response_object = {
             'status': 'fail',
