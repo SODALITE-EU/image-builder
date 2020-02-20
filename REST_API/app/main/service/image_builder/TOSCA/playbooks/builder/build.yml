@@ -1,7 +1,6 @@
 ---
-- hosts: localhost
-  become: yes
-
+- hosts: all
+  gather_facts: no
   tasks:
     - name: Configure image_builder
       set_fact:

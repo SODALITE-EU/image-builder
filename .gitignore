@@ -1,0 +1,16 @@
+*venv/
+.idea/
+migrations/
+__pycache__/
+*.db
+
+
+# specific files
+*config-prod-sample.sh
+*nginx-config
+*site-reload.sh
+*site-stop.sh
+*uWSGI-config.service
+*sodalite-image-builder.ini
+*sodalite-image-builder.sock
+**/image_builder/run/

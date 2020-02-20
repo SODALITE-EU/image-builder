@@ -9,7 +9,7 @@ cd "$run_path" || exit
 
 {
   echo "Launching docker_image_definition with xOpera"
-  sudo -E env "PATH=$PATH" opera deploy --inputs inputs.yaml image_builder docker_image_definition.yaml
+  opera deploy --inputs inputs.yaml image_builder docker_image_definition.yaml
 } &> "$logfile"
 
 cd "../../scripts" || exit
