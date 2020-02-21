@@ -14,3 +14,4 @@ __pycache__/
 *sodalite-image-builder.ini
 *sodalite-image-builder.sock
 **/image_builder/run/
+image-builder-rest-blueprint/inputs
