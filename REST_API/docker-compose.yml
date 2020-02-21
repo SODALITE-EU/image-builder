@@ -4,16 +4,16 @@ version: '3'
 services:
 
   flask:
-    image: webapp-flask
+    image: image-builder-flask
     build:
       context: .
       dockerfile: Dockerfile-flask
     volumes:
-      - "./:/app"
+      - "./:/image-builder"
       - "/var/run/docker.sock:/var/run/docker.sock"
 
   nginx:
-    image: webapp-nginx
+    image: image-builder-nginx
     build:
       context: .
       dockerfile: Dockerfile-nginx

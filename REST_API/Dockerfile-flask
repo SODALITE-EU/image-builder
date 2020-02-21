@@ -1,33 +1,42 @@
 # Dockerfile-flask
-# We simply inherit the Python 3 image. This image does
-# not particularly care what OS runs underneath
-FROM python:3.6-alpine
 
-# install gcc
-RUN apk add build-base libffi-dev postgresql-dev
+#####################################################
+#################     START BIG     #################
+#####################################################
 
-# Set an environment variable with the directory
-# where we'll be running the app
-ENV APP /app
+FROM python:3.6-alpine as big
 
-# Create the directory and instruct Docker to operate
-# from there from now on
+# Install prerequisites
+RUN apk add build-base libffi-dev postgresql-dev bash
+
+# install python packages
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+RUN pip wheel --wheel-dir=/root/wheels -r requirements.txt
+
+#####################################################
+#################   MAKE IT SMALL   #################
+#####################################################
+
+FROM python:3.6-alpine as small
+
+# Install prerequisites
+RUN apk add build-base libffi-dev postgresql-dev bash
+
+# copy python packages from big image
+COPY requirements.txt .
+COPY --from=big /root/wheels /root/wheels
+RUN pip install --find-links=/root/wheels -r requirements.txt
+
+ENV APP /image-builder
 RUN mkdir $APP
 WORKDIR $APP
+
+# We copy codebase into the image
+COPY . .
 
 # Expose the port uWSGI will listen on
 EXPOSE 5000
 
-# Copy the requirements file in order to install
-# Python dependencies
-COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install -r requirements.txt
-
-# We copy the rest of the codebase into the image
-COPY . .
-
-# Finally, we run uWSGI with the ini file we
-# created earlier
 CMD [ "uwsgi", "--ini", "app.ini" ]

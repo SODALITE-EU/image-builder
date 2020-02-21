@@ -4,6 +4,7 @@ import subprocess
 import uuid
 from distutils import dir_util
 
+from pathlib import Path
 import yaml
 
 from app.main.service import ImageBuilderConfig
@@ -59,6 +60,7 @@ def build_image(data: dict):
     timestamp_start = ImageBuilderConfig.datetime_now_to_string()
     run_path = f'{basedir}/image_builder/run/{session_token}'
     TOSCA_path = f'{basedir}/image_builder/TOSCA'
+    deploy_path = f'{basedir}/image_builder/scripts'
     _input = validate(data)
 
     shutil.rmtree(run_path, ignore_errors=True)
@@ -68,10 +70,8 @@ def build_image(data: dict):
     with open(f'{run_path}/inputs.yaml', 'w') as inputs:
         inputs.write(yaml.dump(_input))
 
-    os.chdir(basedir)
-
-    command = ['./image_builder/scripts/deploy.sh', run_path, session_token, logfile, timestamp_start]
-    subprocess.Popen(command)
+    command = ['./deploy.sh', run_path, session_token, logfile, timestamp_start]
+    subprocess.Popen(command, cwd=deploy_path)
 
     response_object = {
         'status': 'Accepted',
