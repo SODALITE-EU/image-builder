@@ -1,4 +1,4 @@
-tosca_definitions_version: tosca_simple_yaml_1_0 
+tosca_definitions_version: tosca_simple_yaml_1_2
 
 
 data_types: 
@@ -453,10 +453,7 @@ topology_template:
     security-groups:  
       type: string    
     flavor-name:  
-      type: string                   
-    demo-files-path:  
       type: string
-      default: ""       
 
 
   node_templates: 
@@ -509,6 +506,10 @@ topology_template:
       properties:
         image_name:  image-builder-flask:latest
         exposed_ports:  ['5000']
+        env:
+#          SESSION_TIMEOUT: { get_input: session_timeout }
+#          SECRET_KEY: { get_input: secret-key }
+          REGISTRY_IP: 154.48.185.207
         volumes:
           - "/var/run/docker.sock:/var/run/docker.sock"
         alias: flask
@@ -520,8 +521,8 @@ topology_template:
       type: sodalite.nodes.DockerizedComponent
       properties:
         image_name:  image-builder-nginx:latest
-        ports:  ['5000:80','443:443']
-        exposed_ports:  ['5000', '443']
+        ports:  ['443:443']
+        exposed_ports:  ['443']
         volumes:
           - "/home/xopera/certs:/etc/nginx/certs"
         alias: nginx
