@@ -1,4 +1,6 @@
 # image-builder
+![Build](https://github.com/SODALITE-EU/image-builder/workflows/Build/badge.svg)
+
 Image builder contains components needed to build images within the SODALITE platform.
 ## docker-image-definition
 docker-image-definition is a TOSCA blueprint, based on tosca_simple_yaml_1_2.
