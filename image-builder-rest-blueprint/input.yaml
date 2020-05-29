@@ -4,3 +4,6 @@ network-name: orchestrator-net
 security-groups: default,sodalite-remote-access,sodalite-rest
 flavor-name: m1.medium
 docker-registry-ip: 154.48.185.207
+identity_file: /path/to/ssh_key
+ca_crt_location: /home/xopera/certs/ca.crt
+ca_key_location: /home/xopera/certs/ca.key
