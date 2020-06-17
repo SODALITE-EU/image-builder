@@ -21,6 +21,7 @@ pipeline {
        ca_crt_file = credentials('xopera-ca-crt')
        ca_key_file = credentials('xopera-ca-key')
    }
+    
     stages {
         stage ('Pull repo code from github') {
             steps {
