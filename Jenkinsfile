@@ -51,6 +51,7 @@ pipeline {
             }
         }
         stage('Deploy to openstack') {
+            when { tag "*" }
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'xOpera_ssh_key', keyFileVariable: 'xOpera_ssh_key_file', usernameVariable: 'xOpera_ssh_username')]) {
                     sh 'truncate -s 0 image-builder-rest-blueprint/input.yaml'
