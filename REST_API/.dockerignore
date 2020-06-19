@@ -2,5 +2,3 @@ JSON-build-params/*
 venv
 build_and_push.sh
 docker-compose.yml
-Makefile
-
