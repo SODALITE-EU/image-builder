@@ -41,7 +41,36 @@ pipeline {
                 sh "docker push $docker_registry_ip/image-builder-nginx"
             }
         }
+        stage('Push image-builder-flask to DockerHub') {
+            when { tag "*" }
+            steps {
+                withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
+                    sh  """#!/bin/bash
+                            export GIT_TAG=${git describe --always --dirty | sed -e"s/^v//"}
+                            docker tag image-builder-flask sodaliteh2020/image-builder-flask:${GIT_TAG}
+                            docker tag image-builder-flask sodaliteh2020/image-builder-flask
+                            docker push sodaliteh2020/image-builder-flask:${GIT_TAG}
+                            docker push sodaliteh2020/image-builder-flask
+                        """
+                }
+            }
+        }
+        stage('Push image-builder-nginx to DockerHub') {
+            when { tag "*" }
+            steps {
+                withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
+                    sh  """#!/bin/bash
+                            export GIT_TAG=${git describe --always --dirty | sed -e"s/^v//"}
+                            docker tag image-builder-nginx sodaliteh2020/image-builder-nginx:${GIT_TAG}
+                            docker tag image-builder-nginx sodaliteh2020/image-builder-nginx
+                            docker push sodaliteh2020/image-builder-nginx:${GIT_TAG}
+                            docker push sodaliteh2020/image-builder-nginx
+                        """
+                }
+            }
+        }
         stage('Install dependencies') {
+            when { tag "*" }
             steps {
                 sh "virtualenv venv"
                 sh ". venv/bin/activate; python -m pip install --upgrade pip"
@@ -51,6 +80,7 @@ pipeline {
             }
         }
         stage('Deploy to openstack') {
+            when { tag "*" }
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'xOpera_ssh_key', keyFileVariable: 'xOpera_ssh_key_file', usernameVariable: 'xOpera_ssh_username')]) {
                     sh 'truncate -s 0 image-builder-rest-blueprint/input.yaml'
