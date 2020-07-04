@@ -8,7 +8,7 @@ docker-image-definition is a TOSCA blueprint, based on tosca_simple_yaml_1_2.
 Within SODALITE platform, it is executed with [xOpera orchestrator](https://github.com/xlab-si/xopera-opera).
 If using xOpera 1.7 via CLI:
     
-    sudo opera -i inputs.yaml image_builder docker_image_definition.yaml    
+    sudo opera deploy -i inputs.yaml image_builder docker_image_definition.yaml
 
 ### Sample inputs
 Inputs can be found in [docker-image-definition/inputs](docker-image-definition/inputs).
