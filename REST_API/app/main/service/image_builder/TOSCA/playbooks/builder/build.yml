@@ -135,6 +135,18 @@
         warn: false
       when: source.type == dockerfile_type and target.images is defined
 
+    - name: Extract default base image from Dockerfile
+      shell: sed q "{{ workdir }}/Dockerfile" | sed -e 's/^.*=//g'
+      register: base_image_data
+      args:
+        warn: false
+      when: source.type == dockerfile_type and target.images is defined
+
+    - name: Preserving default base image
+      set_fact:
+        default_base_image: "{{ base_image_data.stdout }}"
+      when: source.type == dockerfile_type and target.images is defined
+
     # Build and push image variants
     - name: Build image variants and push them
       docker_image:
@@ -143,8 +155,7 @@
           path: "{{ workdir }}/{{ dir_name }}"
           dockerfile: "{{ workdir }}/Dockerfile"
           args:
-            # Only override the base image if an override is defined for this variant
-            BASE_IMAGE: "{{ item.base | default(omit) }}"
+            BASE_IMAGE: "{{ item.base | default(default_base_image, true) }}"
           pull: yes
         name: "{{ item.image }}"
         force_source: yes

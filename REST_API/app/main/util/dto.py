@@ -31,6 +31,12 @@ class BuildDto:
         'password': fields.String(required=False, description='password for git')
     })
 
+    image_variant_context = api.model('image_variant_context', {
+        'image': fields.String(required=True, description='desired docker image name'),
+        'tag': fields.String(required=True, description='desired docker image tag'),
+        'base': fields.String(required=False, description='desired base image to build on')
+    })
+
     build_params = api.model('build_params', {
         'source_type': fields.String(required=True, description='"Dockerfile" or "tar"'),
         'source_url': fields.Url(required=True, description='url of Dockerfile or tar'),
@@ -38,8 +44,10 @@ class BuildDto:
         'source_password': fields.Url(required=False, description='password for Dockerfile or tar'),
         'build_context': fields.List(required=False, description='Build context, if building from Dockerfile',
                                      cls_or_instance=fields.Nested(git_context)),
-        'target_image_name': fields.String(required=True, description='desired docker image name'),
-        'target_image_tag': fields.String(required=False, default='latest', description='desired docker image tag')
+        'target_image_name': fields.String(required=False, description='desired docker image name'),
+        'target_image_tag': fields.String(required=False, default='latest', description='desired docker image tag'),
+        'target_images': fields.List(required=False, description='List of image variants to build',
+                                    cls_or_instance=fields.Nested(image_variant_context))
     })
 
 
