@@ -46,11 +46,9 @@ pipeline {
             steps {
                 withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
                     sh  """#!/bin/bash
-                            export GIT_TAG=${git describe --always --dirty | sed -e"s/^v//"}
-                            docker tag image-builder-flask sodaliteh2020/image-builder-flask:${GIT_TAG}
                             docker tag image-builder-flask sodaliteh2020/image-builder-flask
-                            docker push sodaliteh2020/image-builder-flask:${GIT_TAG}
-                            docker push sodaliteh2020/image-builder-flask
+                            git fetch --tags
+                            ./make_docker.sh push sodaliteh2020/image-builder-flask
                         """
                 }
             }
@@ -60,11 +58,9 @@ pipeline {
             steps {
                 withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
                     sh  """#!/bin/bash
-                            export GIT_TAG=${git describe --always --dirty | sed -e"s/^v//"}
-                            docker tag image-builder-nginx sodaliteh2020/image-builder-nginx:${GIT_TAG}
                             docker tag image-builder-nginx sodaliteh2020/image-builder-nginx
-                            docker push sodaliteh2020/image-builder-nginx:${GIT_TAG}
-                            docker push sodaliteh2020/image-builder-nginx
+                            git fetch --tags
+                            ./make_docker.sh push sodaliteh2020/image-builder-nginx
                         """
                 }
             }

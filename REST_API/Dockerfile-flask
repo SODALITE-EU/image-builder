@@ -21,7 +21,7 @@ RUN pip wheel --wheel-dir=/root/wheels -r requirements.txt
 FROM python:3.6-alpine as small
 
 # Install prerequisites
-RUN apk add build-base libffi-dev postgresql-dev bash
+RUN apk add build-base libffi-dev postgresql-dev bash git
 
 # copy python packages from big image
 COPY requirements.txt .
@@ -34,6 +34,9 @@ WORKDIR $APP
 
 # We copy codebase into the image
 COPY . .
+
+# Init database
+RUN make database
 
 # Expose the port uWSGI will listen on
 EXPOSE 5000
