@@ -21,9 +21,20 @@ Inputs can be found in [docker-image-definition/inputs](docker-image-definition/
     - python 3.6 or newer
      
 #### Access to docker registry
-In order to be able to push built docker images to docker registry, image-builder REST API needs access to registry.
-If repository uses certificate-based client-server authentication, signed certificates must be installed to `/etc/docker/certs.d`.
-See [docker docs](https://docs.docker.com/engine/security/certificates/) for more info.
+
+In order to be able to push built images out, `image-builder` needs access to a docker registry. The registry
+itself can be public or private, with the appropriate access credentials provided. For development and testing
+purposes, a local registry can be trivially deployed using a pre-built image:
+
+```
+$ docker run -d -p 5000:5000 --restart=always --name registry registry:2
+```
+
+The locally deployed registry can then be accessed at `localhost:5000`. More information on deploying and
+securing an image registry is available [here](https://docs.docker.com/registry/deploying/).
+
+If the repository uses certificate-based client-server authentication, signed certificates must be installed in `/etc/docker/certs.d`.
+See the [docker docs](https://docs.docker.com/engine/security/certificates/) for more infoformation.
 
 
 ### Config
@@ -59,7 +70,4 @@ or run stages separately:
     
 ### Sample JSON payloads
 Sample JSON payloads to be used with `/build/` endpoint can be found in [JSON-build-params](REST_API/JSON-build-params)
-
-
-
 
