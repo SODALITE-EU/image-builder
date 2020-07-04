@@ -63,8 +63,8 @@
         item_as_item: "{{ item | dict2items | first }}"
         dir_name: "{{ item_as_item.key }}"
         properties: "{{ item_as_item.value }}"
-        authentication: "{{ properties.password is not none and properties.username is not none }}"
-        url_authentication: "https://{{ properties.username }}:{{ properties.password }}@{{ properties.url[8:] }}"
+        authentication: "{{ properties.password is defined and not none and properties.username is defined and not none }}"
+        url_authentication: "https://{{ properties.username | default(omit) }}:{{ properties.password | default(omit) }}@{{ properties.url[8:] }}"
         git_url: "{{ url_authentication if authentication == true else properties.url }}"
       when: source.type == dockerfile_type and properties.url is defined
       loop: "{{ build_context }}"
