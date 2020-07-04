@@ -114,13 +114,18 @@
       docker_image:
         source: build
         build:
-          path: "{{ workdir }}"
+          path: "{{ workdir }}/{{ dir_name }}"
+          dockerfile: "{{ workdir }}/Dockerfile"
           pull: yes
         name: "{{ target.image_name }}"
         force_source: yes
         repository: "{{ target.registry_ip }}/{{ target.image_name }}:{{ target.image_tag }}"
         push: yes
+      vars:
+        item_as_item: "{{ item | dict2items | first }}"
+        dir_name: "{{ item_as_item.key }}"
       when: source.type == dockerfile_type
+      loop: "{{ build_context }}"
 
     - name: Load image from archive and push it
       docker_image:
