@@ -133,19 +133,19 @@
       args:
         # sed does a better job of this than the replace module, silence warnings about its use.
         warn: false
-      when: source.type == dockerfile_type and target.images is defined
+      when: source.type == dockerfile_type and target.images is defined and target.images is not none
 
     - name: Extract default base image from Dockerfile
       shell: sed q "{{ workdir }}/Dockerfile" | sed -e 's/^.*=//g'
       register: base_image_data
       args:
         warn: false
-      when: source.type == dockerfile_type and target.images is defined
+      when: source.type == dockerfile_type and target.images is defined and target.images is not none
 
     - name: Preserving default base image
       set_fact:
         default_base_image: "{{ base_image_data.stdout }}"
-      when: source.type == dockerfile_type and target.images is defined
+      when: source.type == dockerfile_type and target.images is defined and target.images is not none
 
     # Build and push image variants
     - name: Build image variants and push them
@@ -161,8 +161,8 @@
         force_source: yes
         repository: "{{ target.registry_ip }}/{{ item.image }}:{{ item.tag }}"
         push: yes
-      when: source.type == dockerfile_type and target.images is defined
-      loop: "{{ target.images }}"
+      when: source.type == dockerfile_type and target.images is defined and target.images is not none
+      loop: "{{ target.images | default([], True) }}"
 
     # Build and push a single target image
     - name: Build image and push it
