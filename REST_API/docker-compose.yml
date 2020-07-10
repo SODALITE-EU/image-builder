@@ -3,7 +3,7 @@
 version: '3'
 services:
 
-  flask:
+  image-builer-flask:
     image: image-builder-flask
     build:
       context: .
@@ -11,7 +11,7 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
 
-  nginx:
+  image-builer-nginx:
     image: image-builder-nginx
     build:
       context: .
@@ -20,6 +20,6 @@ services:
       - 5000:80
       - 443:443
     depends_on:
-      - flask
+      - image-builer-flask
     volumes:
       - "/home/xopera/certs:/etc/nginx/certs"
