@@ -529,7 +529,7 @@ topology_template:
           REGISTRY_IP: 154.48.185.207
         volumes:
           - "/var/run/docker.sock:/var/run/docker.sock"
-        alias: image-builer-flask
+        alias: image-builder-flask
       requirements:
         - host:  image-builder-docker-host
         - network: image-builder-docker-network
@@ -542,7 +542,7 @@ topology_template:
         exposed_ports:  ['443']
         volumes:
           - "/home/xopera/certs:/etc/nginx/certs"
-        alias: image-builer-nginx
+        alias: image-builder-nginx
       requirements:
         - host:  image-builder-docker-host
         - dependency: image-builder-flask
