@@ -13,5 +13,16 @@ source:
 
 target:
   registry_ip: my_registry_ip
+
+  # For single images, define the following
   image_name: my_image_name
   image_tag: my_image_tag
+
+  # For image variants, define as follows:
+  images:
+    - image: my_image_name
+      tag: my_image_tag
+
+    - image: my_image_name
+      tag: my_image_variant_tag
+      base: my_image_variant_base_image

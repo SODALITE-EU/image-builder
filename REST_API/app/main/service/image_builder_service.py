@@ -21,14 +21,21 @@ def validate(data: dict):
     url_username = data.get('source_username', None)
     url_pass = data.get('source_password', None)
     target_registry_ip = registry_ip
-    image_name = data['target_image_name']
-    image_tag = data['target_image_tag']
+    image_name = data.get('target_image_name', None)
+    image_tag = data.get('target_image_tag', None)
+
     try:
         build_context = [{element['dir_name']: {'url': element.get('url'), 'username': element.get('username', None),
                                                 'password': element.get('password', None)}} for element in
                          data['build_context']]
     except KeyError:
         build_context = None
+
+    try:
+        image_variants = [{'image': element.get('image'), 'tag': element.get('tag'), 'base': element.get('base', None)}
+                          for element in data['target_images']]
+    except KeyError:
+        image_variants = None
 
     return {
         "source": {
@@ -41,7 +48,8 @@ def validate(data: dict):
         "target": {
             "registry_ip": target_registry_ip,
             "image_name": image_name,
-            "image_tag": image_tag
+            "image_tag": image_tag,
+            "images": image_variants,
         }
     }
 

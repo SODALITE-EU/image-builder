@@ -16,8 +16,8 @@
           - source.url is defined and source.url is not none
           - (source.username is defined and source.username is not none) == (source.password is defined and source.password is not none)
           - target.registry_ip is defined and target.registry_ip is not none
-          - target.image_name is defined and target.image_name is not none
-          - target.image_tag is defined and target.image_tag is not none
+          - target.image_name is defined and target.image_name is not none or target.images is defined and target.images is not none
+          - target.image_tag is defined and target.image_tag is not none or target.images is defined and target.images is not none
 
     - name: set url
       set_fact:
@@ -110,17 +110,78 @@
         state: absent
       when: source.type == tar_type
 
+    - name: Set Git repo clone path
+      set_fact:
+        dir_name: "{{ repo_name }}"
+      vars:
+        item_as_item: "{{ item | dict2items | first }}"
+        repo_name: "{{ item_as_item.key }}"
+      when: source.type == dockerfile_type and build_context is defined
+      loop: "{{ build_context }}"
+
+    - name: Set repo_name when build_context is empty
+      set_fact:
+        dir_name: ""
+      when: source.type == dockerfile_type and dir_name is not defined
+
+    - name: Preparing Dockerfile for BASE_IMAGE injection
+      # Match both 'FROM base' and 'FROM base as xxx' cases, with and without :version specifications.
+      # This will rewrite the first instance of the FROM line to be:
+      #
+      # ARG BASE_IMAGE=base:latest
+      # FROM ${BASE_IMAGE} as builder
+      #
+      # allowing the BASE_IMAGE to be overloaded by the image builder when building image variants.
+      shell: sed -i -e '1 s/\(FROM\) \([a-z:]*\)\([ \t].*$\)/ARG BASE_IMAGE=\2\n\1 \${BASE_IMAGE}\3/' \
+                    -e '1 s/\(FROM\) \([a-z:].*$\)/ARG BASE_IMAGE=\2\n\1 \${BASE_IMAGE}/' \
+                   "{{ workdir }}/Dockerfile"
+      args:
+        # sed does a better job of this than the replace module, silence warnings about its use.
+        warn: false
+      when: source.type == dockerfile_type and target.images is defined and target.images is not none
+
+    - name: Extract default base image from Dockerfile
+      shell: sed q "{{ workdir }}/Dockerfile" | sed -e 's/^.*=//g'
+      register: base_image_data
+      args:
+        warn: false
+      when: source.type == dockerfile_type and target.images is defined and target.images is not none
+
+    - name: Preserving default base image
+      set_fact:
+        default_base_image: "{{ base_image_data.stdout }}"
+      when: source.type == dockerfile_type and target.images is defined and target.images is not none
+
+    # Build and push image variants
+    - name: Build image variants and push them
+      docker_image:
+        source: build
+        build:
+          path: "{{ workdir }}/{{ dir_name }}"
+          dockerfile: "{{ workdir }}/Dockerfile"
+          args:
+            BASE_IMAGE: "{{ item.base | default(default_base_image, true) }}"
+          pull: yes
+        name: "{{ item.image }}"
+        force_source: yes
+        repository: "{{ target.registry_ip }}/{{ item.image }}:{{ item.tag }}"
+        push: yes
+      when: source.type == dockerfile_type and target.images is defined and target.images is not none
+      loop: "{{ target.images | default([], True) }}"
+
+    # Build and push a single target image
     - name: Build image and push it
       docker_image:
         source: build
         build:
-          path: "{{ workdir }}"
+          path: "{{ workdir }}/{{ dir_name }}"
+          dockerfile: "{{ workdir }}/Dockerfile"
           pull: yes
         name: "{{ target.image_name }}"
         force_source: yes
         repository: "{{ target.registry_ip }}/{{ target.image_name }}:{{ target.image_tag }}"
         push: yes
-      when: source.type == dockerfile_type
+      when: source.type == dockerfile_type and target.image_name is defined and target.images is none
 
     - name: Load image from archive and push it
       docker_image:
@@ -129,7 +190,7 @@
         source: load
         repository: "{{ target.registry_ip }}/{{ target.image_name }}:{{ target.image_tag }}"
         push: yes
-      when: source.type == tar_type
+      when: source.type == tar_type and target.image_name is defined
 
     - name: Clean workdir
       file:

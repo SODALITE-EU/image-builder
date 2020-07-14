@@ -61,6 +61,19 @@ data_types:
         default: ""
         description: Password for authentication (if needed) for git repo
 
+  mytypes.ImageVariant:
+    description: Image variant to build.
+    properties:
+      image:
+        type: string
+        description: Image name
+      tag:
+        type: string
+        description: Image tag
+      base:
+        type: string
+        description: Base image to inject
+
   mytypes.Target:
     description: Destination for built image.
     properties:
@@ -76,6 +89,13 @@ data_types:
         type: string
         required: true
         description: Target docker image tag.
+      images:
+        type: list
+        default: []
+        required: false
+        description: List of image variants to build.
+        entry_schema:
+          type: mytypes.ImageVariant
 
 node_types:
   my.nodes.image.builder:
