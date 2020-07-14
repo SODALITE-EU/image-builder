@@ -181,7 +181,7 @@
         force_source: yes
         repository: "{{ target.registry_ip }}/{{ target.image_name }}:{{ target.image_tag }}"
         push: yes
-      when: source.type == dockerfile_type and target.image_name is defined
+      when: source.type == dockerfile_type and target.image_name is defined and target.images is none
 
     - name: Load image from archive and push it
       docker_image:
