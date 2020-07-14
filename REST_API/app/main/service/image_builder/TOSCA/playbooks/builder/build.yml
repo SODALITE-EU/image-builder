@@ -116,8 +116,13 @@
       vars:
         item_as_item: "{{ item | dict2items | first }}"
         repo_name: "{{ item_as_item.key }}"
-      when: source.type == dockerfile_type
+      when: source.type == dockerfile_type and build_context is defined
       loop: "{{ build_context }}"
+
+    - name: Set repo_name when build_context is empty
+      set_fact:
+        dir_name: ""
+      when: source.type == dockerfile_type and dir_name is not defined
 
     - name: Preparing Dockerfile for BASE_IMAGE injection
       # Match both 'FROM base' and 'FROM base as xxx' cases, with and without :version specifications.
