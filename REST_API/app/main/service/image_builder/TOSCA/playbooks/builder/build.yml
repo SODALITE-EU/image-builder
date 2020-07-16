@@ -15,7 +15,7 @@
             target_registry_defined: "{{ target.registry_ip is defined and target.registry_ip is not none | bool }}"
             target_image_defined: "{{ target.image_name is defined and target.image_name is not none and target.image_tag is defined and target.image_tag is not none | bool }}"
             target_images_defined: "{{ target.images is defined and target.images is not none | bool }}"
-            build_context_defined: "{{ source.build_context is defined and source.build_context is not none and source.build_context | length <= 1 | bool }}"
+            build_context_defined: "{{ source.build_context is defined and source.build_context is not none | bool }}"
 
         - name: Determine current image building mode
           set_fact:
@@ -54,32 +54,26 @@
     - name: set empty build_context
       set_fact:
         build_context: "{{ source.build_context | default([], true) }}"
+    - debug:
+        msg: "{{ build_context.dir_name }}"
 
     - name: Add local build context for Dockerfile
       copy:
         src: "{{ path }}"
-        dest: "{{ workdir }}/{{ dir_name }}"
+        dest: "{{ workdir }}/{{ build_context.dir_name }}"
       vars:
-        item_as_item: "{{ item | dict2items | first }}"
-        dir_name: "{{ item_as_item.key }}"
-        properties: "{{ item_as_item.value }}"
-        path: "{{ properties.path if properties.path[-1] == '/' else properties.path+'/' }}"
-      when: dockerfile_mode and properties.path is defined
-      loop: "{{ build_context }}"
+        path: "{{ build_context.path if build_context.path[-1] == '/' else build_context.path+'/' }}"
+      when: dockerfile_mode and build_context.path is defined
 
     - name: Add build context for Dockerfile from git
       git:
         repo: "{{ git_url }}"
-        dest: "{{ workdir }}/{{ dir_name }}"
+        dest: "{{ workdir }}/{{ build_context.dir_name }}"
       vars:
-        item_as_item: "{{ item | dict2items | first }}"
-        dir_name: "{{ item_as_item.key }}"
-        properties: "{{ item_as_item.value }}"
-        authentication: "{{ properties.password is defined and not none and properties.username is defined and not none }}"
-        url_authentication: "https://{{ properties.username | default(omit) }}:{{ properties.password | default(omit) }}@{{ properties.url[8:] }}"
-        git_url: "{{ url_authentication if authentication == true else properties.url }}"
-      when: dockerfile_mode and properties.url is defined
-      loop: "{{ build_context }}"
+        authentication: "{{ build_context.password is defined and build_context.password is not none and build_context.username is defined and build_context.username is not none }}"
+        url_authentication: "https://{{ build_context.username | default(omit) }}:{{ build_context.password | default(omit) }}@{{ build_context.url[8:] }}"
+        git_url: "{{ url_authentication if authentication == true else build_context.url }}"
+      when: dockerfile_mode and build_context.url is defined
 
     - name: Download archive
       get_url:
@@ -124,12 +118,8 @@
 
     - name: Set Git repo clone path
       set_fact:
-        dir_name: "{{ repo_name }}"
-      vars:
-        item_as_item: "{{ item | dict2items | first }}"
-        repo_name: "{{ item_as_item.key }}"
+        dir_name: "{{ build_context.dir_name }}"
       when: dockerfile_mode and build_context_defined
-      loop: "{{ build_context }}"
 
     - name: Set repo_name when build_context is empty
       set_fact:
