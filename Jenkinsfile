@@ -43,6 +43,7 @@ pipeline {
         }
 
         stage('Build and push image-builder-flask') {
+            when { tag "*" }
             steps {
                 sh "cd REST_API; docker build -t image-builder-flask -f Dockerfile-flask ."
                 sh "docker tag image-builder-flask $docker_registry_ip/image-builder-flask"
@@ -50,6 +51,7 @@ pipeline {
             }
         }
         stage('Build and push image-builder-nginx') {
+            when { tag "*" }
             steps {
                 sh "cd REST_API; docker build -t image-builder-nginx -f Dockerfile-nginx ."
                 sh "docker tag image-builder-nginx $docker_registry_ip/image-builder-nginx"
