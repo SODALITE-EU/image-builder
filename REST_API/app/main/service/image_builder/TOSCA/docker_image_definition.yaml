@@ -1,7 +1,8 @@
-tosca_definitions_version: tosca_simple_yaml_1_2
+tosca_definitions_version: tosca_simple_yaml_1_3
 
 data_types:
   mytypes.Source:
+    derived_from: map
     description: Docker image source. Could be either tar archive or Dockerfile with optional build context
     properties:
       type:
@@ -24,11 +25,12 @@ data_types:
       build_context:
         type: mytypes.BuildContext
         required: false
-        default: null
+        default: ""
         description: BuildContext used . Can be used with type -> dockerfile.
 
 
   mytypes.BuildContext:
+    derived_from: map
     description: Git repo with buildcontext for dockerfile. Name of element is mapped to target dir name.
     properties:
       dir_name:
@@ -57,6 +59,7 @@ data_types:
         description: Password for authentication (if needed) for git repo
 
   mytypes.ImageVariant:
+    derived_from: map
     description: Image variant to build.
     properties:
       image:
@@ -70,6 +73,7 @@ data_types:
         description: Base image to inject
 
   mytypes.Target:
+    derived_from: map
     description: Destination for built image.
     properties:
       registry_ip:
@@ -108,11 +112,13 @@ node_types:
     interfaces:
       Standard:
         type: tosca.interfaces.node.lifecycle.Standard
-        create:
-          inputs:
-            source:  { default: { get_property: [ SELF, source ] } }
-            target:  { default: { get_property: [ SELF, target ] } }
-          implementation: playbooks/builder/build.yml
+        operations:
+          create:
+            inputs:
+              source:  { default: { get_property: [ SELF, source ] } }
+              target:  { default: { get_property: [ SELF, target ] } }
+            implementation:
+              primary: playbooks/builder/build.yml
 topology_template:
 
   inputs:
