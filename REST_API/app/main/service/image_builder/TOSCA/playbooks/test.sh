@@ -10,14 +10,15 @@ docker rmi $(docker images | grep tests | tr -s ' ' | cut -d ' ' -f 1,2 --output
 
 # transform tests to yaml
 echo "Running json_to_yaml.yml..."
-ansible-playbook -i tests/hosts -e @tests/params.yaml -e registry_ip="${registry_ip}" tests/json_to_yaml.yml >/dev/null
+ansible-playbook --connection=local --inventory localhost, -e 'ansible_python_interpreter="/usr/bin/python3"' -e @tests/params.yaml -e registry_ip="${registry_ip}" tests/json_to_yaml.yml >/dev/null
 
+echo "Testing..."
 COUNTER=1
 return_code=0
 for path in "$test_path"/* ; do
 
   # run test on image builder
-  ERROR=$( ansible-playbook -i tests/hosts -e @"${path}" builder/build.yml -vvv 2>&1)
+  ERROR=$( ansible-playbook --connection=local --inventory localhost, -e 'ansible_python_interpreter="/usr/bin/python3"' -e @"${path}" -e building_workdir=workdir builder/build.yml -vvv 2>&1)
 
   filename=$(basename "$path")
   test_name="${filename%.*}"
@@ -47,5 +48,10 @@ for path in "$test_path"/* ; do
 
 done
 
+echo Cleaning up...
+
+rm -rf rm -rf builder/workdir/
+
+echo Done.
 exit $return_code
 

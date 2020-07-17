@@ -6,6 +6,11 @@
       set_fact:
         workdir: "/home/image_builder/{{ 99999999 | random | to_uuid }}"
 
+    - name: Set custom workdir
+      set_fact:
+        workdir: "{{ playbook_dir }}/{{ building_workdir}}/{{ 99999999 | random | to_uuid }}"
+      when: building_workdir is defined and building_workdir is not none
+
     - name: Validate input data
       block:
         - name: Check which values are defined
