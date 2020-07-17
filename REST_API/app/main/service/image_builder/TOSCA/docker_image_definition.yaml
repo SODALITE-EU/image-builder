@@ -22,34 +22,29 @@ data_types:
         default: ""
         description: Password for authentication (if needed) for dockerfile or tarfile
       build_context:
-        type: list
+        type: mytypes.BuildContext
         required: false
-        default: []
-        description: List of build context elements. Can be used with type -> dockerfile.
-        entry_schema:
-          type: mytypes.BuildContextElement
+        default: null
+        description: BuildContext used . Can be used with type -> dockerfile.
 
 
-  mytypes.BuildContextElement:
-    description: Git repo or local dir with buildcontext for dockerfile. Name of element is mapped to target dir name.
-
-  mytypes.BuildContextDir:
-    description:  Local dir with build context for dockerfile. Name of element is mapped to target dir name.
-    derived_from: mytypes.BuildContextElement
+  mytypes.BuildContext:
+    description: Git repo with buildcontext for dockerfile. Name of element is mapped to target dir name.
     properties:
+      dir_name:
+        type: string
+        description: Name of dir with build context
+        required: true
       path:
         type: string
         description: Path to dir with build context
-        required: true
-
-  mytypes.BuildContextGit:
-    description: Git repo with buildcontext for dockerfile. Name of element is mapped to target dir name.
-    derived_from: mytypes.BuildContextElement
-    properties:
+        required: false
+        default: ""
       url:
         type: string
         description: Url of git repo
-        required: true
+        required: false
+        default: ""
       username:
         type: string
         required: false

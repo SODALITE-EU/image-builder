@@ -1,0 +1,10 @@
+source:
+    build_context:
+        dir_name: build_context
+        url: https://github.com/mihaTrajbaric/generic_docker_build_context.git
+    type: dockerfile
+    url: https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/python_build_context/Dockerfile
+target:
+    image_name: tests/build-context
+    image_tag: latest
+    registry_ip: localhost:5001

@@ -5,19 +5,36 @@
     - name: Configure image_builder
       set_fact:
         workdir: "/home/image_builder/{{ 99999999 | random | to_uuid }}"
-        dockerfile_type: dockerfile
-        tar_type: tar
 
+    - name: Set custom workdir
+      set_fact:
+        workdir: "{{ playbook_dir }}/{{ building_workdir}}/{{ 99999999 | random | to_uuid }}"
+      when: building_workdir is defined and building_workdir is not none
 
-    - name: validate input data
-      assert:
-        that:
-          - source.type == dockerfile_type or source.type == tar_type
-          - source.url is defined and source.url is not none
-          - (source.username is defined and source.username is not none) == (source.password is defined and source.password is not none)
-          - target.registry_ip is defined and target.registry_ip is not none
-          - target.image_name is defined and target.image_name is not none or target.images is defined and target.images is not none
-          - target.image_tag is defined and target.image_tag is not none or target.images is defined and target.images is not none
+    - name: Validate input data
+      block:
+        - name: Check which values are defined
+          set_fact:
+            source_url_defined: "{{ source.url is defined and source.url is not none | bool }}"
+            source_authentication: "{{ source.username is defined and source.username is not none and source.password is defined and source.password is not none and source.url[:8] == 'https://' | bool }}"
+            target_registry_defined: "{{ target.registry_ip is defined and target.registry_ip is not none | bool }}"
+            target_image_defined: "{{ target.image_name is defined and target.image_name is not none and target.image_tag is defined and target.image_tag is not none | bool }}"
+            target_images_defined: "{{ target.images is defined and target.images is not none | bool }}"
+            build_context_defined: "{{ source.build_context is defined and source.build_context is not none | bool }}"
+
+        - name: Determine current image building mode
+          set_fact:
+            tar_mode: "{{ source.type == 'tar' and target_image_defined and not target_images_defined and not build_context_defined | bool }}"
+            dockerfile_single_image_mode: "{{ source.type == 'dockerfile' and target_image_defined and not target_images_defined | bool }}"
+            dockerfile_image_variants_mode: "{{ source.type == 'dockerfile' and target_images_defined and not target_image_defined | bool }}"
+            dockerfile_mode: "{{ source.type == 'dockerfile' }}"
+
+        - name: Validate input data
+          assert:
+            that:
+              - source_url_defined
+              - target_registry_defined
+              - tar_mode or dockerfile_single_image_mode or dockerfile_image_variants_mode
 
     - name: set url
       set_fact:
@@ -31,13 +48,13 @@
     - name: Authenticate url
       set_fact:
         url: "https://{{ source.username }}:{{ source.password }}@{{ source.url[8:] }}"
-      when: source.username is defined and source.username is not none and source.url[:8] == "https://"
+      when: source_authentication
 
     - name: Download Dockerfile
       get_url:
         url: "{{ source.url }}"
         dest: "{{ workdir }}/Dockerfile"
-      when: source.type == dockerfile_type
+      when: dockerfile_mode
 
     - name: set empty build_context
       set_fact:
@@ -46,83 +63,71 @@
     - name: Add local build context for Dockerfile
       copy:
         src: "{{ path }}"
-        dest: "{{ workdir }}/{{ dir_name }}"
+        dest: "{{ workdir }}/{{ build_context.dir_name }}"
       vars:
-        item_as_item: "{{ item | dict2items | first }}"
-        dir_name: "{{ item_as_item.key }}"
-        properties: "{{ item_as_item.value }}"
-        path: "{{ properties.path if properties.path[-1] == '/' else properties.path+'/' }}"
-      when: source.type == dockerfile_type and properties.path is defined
-      loop: "{{ build_context }}"
+        path: "{{ build_context.path if build_context.path[-1] == '/' else build_context.path+'/' }}"
+      when: dockerfile_mode and build_context.path is defined
 
     - name: Add build context for Dockerfile from git
       git:
         repo: "{{ git_url }}"
-        dest: "{{ workdir }}/{{ dir_name }}"
+        dest: "{{ workdir }}/{{ build_context.dir_name }}"
       vars:
-        item_as_item: "{{ item | dict2items | first }}"
-        dir_name: "{{ item_as_item.key }}"
-        properties: "{{ item_as_item.value }}"
-        authentication: "{{ properties.password is defined and not none and properties.username is defined and not none }}"
-        url_authentication: "https://{{ properties.username | default(omit) }}:{{ properties.password | default(omit) }}@{{ properties.url[8:] }}"
-        git_url: "{{ url_authentication if authentication == true else properties.url }}"
-      when: source.type == dockerfile_type and properties.url is defined
-      loop: "{{ build_context }}"
+        authentication: "{{ build_context.password is defined and build_context.password is not none and build_context.username is defined and build_context.username is not none }}"
+        url_authentication: "https://{{ build_context.username | default(omit) }}:{{ build_context.password | default(omit) }}@{{ build_context.url[8:] }}"
+        git_url: "{{ url_authentication if authentication == true else build_context.url }}"
+      when: dockerfile_mode and build_context.url is defined
 
     - name: Download archive
       get_url:
         url: "{{ source.url }}"
         dest: "{{ workdir }}/archive"
-      when: source.type == tar_type
+      when: tar_mode
       register: msg
 
     - set_fact:
         tar_path: "{{ msg.dest }}"
-      when: source.type == tar_type
+      when: tar_mode
 
     - name: Create workdir for archive extraction
       file:
         path: "{{ workdir }}/tmp"
         state: directory
-      when: source.type == tar_type
+      when: tar_mode
 
     - name: Unarchive a file that is already on the remote machine
       unarchive:
         src: "{{ tar_path }}"
         dest: "{{ workdir }}/tmp"
         remote_src: yes
-      when: source.type == tar_type
+      when: tar_mode
 
     - shell: "cat {{ workdir }}/tmp/manifest.json"
       register: data
-      when: source.type == tar_type
+      when: tar_mode
 
     - name: Get image name
       set_fact:
         origin_image_name: "{{ image_facts.RepoTags[0] }}"
       vars:
         image_facts: "{{ data.stdout | from_json | first }}"
-      when: source.type == tar_type
+      when: tar_mode
 
     - name: Remove tmp
       file:
         path: "{{ workdir }}/tmp"
         state: absent
-      when: source.type == tar_type
+      when: tar_mode
 
     - name: Set Git repo clone path
       set_fact:
-        dir_name: "{{ repo_name }}"
-      vars:
-        item_as_item: "{{ item | dict2items | first }}"
-        repo_name: "{{ item_as_item.key }}"
-      when: source.type == dockerfile_type and build_context is defined
-      loop: "{{ build_context }}"
+        dir_name: "{{ build_context.dir_name }}"
+      when: dockerfile_mode and build_context_defined
 
     - name: Set repo_name when build_context is empty
       set_fact:
         dir_name: ""
-      when: source.type == dockerfile_type and dir_name is not defined
+      when: dockerfile_mode and not build_context_defined
 
     - name: Preparing Dockerfile for BASE_IMAGE injection
       # Match both 'FROM base' and 'FROM base as xxx' cases, with and without :version specifications.
@@ -138,19 +143,19 @@
       args:
         # sed does a better job of this than the replace module, silence warnings about its use.
         warn: false
-      when: source.type == dockerfile_type and target.images is defined and target.images is not none
+      when: dockerfile_image_variants_mode
 
     - name: Extract default base image from Dockerfile
       shell: sed q "{{ workdir }}/Dockerfile" | sed -e 's/^.*=//g'
       register: base_image_data
       args:
         warn: false
-      when: source.type == dockerfile_type and target.images is defined and target.images is not none
+      when: dockerfile_image_variants_mode
 
     - name: Preserving default base image
       set_fact:
         default_base_image: "{{ base_image_data.stdout }}"
-      when: source.type == dockerfile_type and target.images is defined and target.images is not none
+      when: dockerfile_image_variants_mode
 
     # Build and push image variants
     - name: Build image variants and push them
@@ -166,7 +171,7 @@
         force_source: yes
         repository: "{{ target.registry_ip }}/{{ item.image }}:{{ item.tag }}"
         push: yes
-      when: source.type == dockerfile_type and target.images is defined and target.images is not none
+      when: dockerfile_image_variants_mode
       loop: "{{ target.images | default([], True) }}"
 
     # Build and push a single target image
@@ -181,7 +186,7 @@
         force_source: yes
         repository: "{{ target.registry_ip }}/{{ target.image_name }}:{{ target.image_tag }}"
         push: yes
-      when: source.type == dockerfile_type and target.image_name is defined and target.images is none
+      when: dockerfile_single_image_mode
 
     - name: Load image from archive and push it
       docker_image:
@@ -190,7 +195,7 @@
         source: load
         repository: "{{ target.registry_ip }}/{{ target.image_name }}:{{ target.image_tag }}"
         push: yes
-      when: source.type == tar_type and target.image_name is defined
+      when: tar_mode
 
     - name: Clean workdir
       file:

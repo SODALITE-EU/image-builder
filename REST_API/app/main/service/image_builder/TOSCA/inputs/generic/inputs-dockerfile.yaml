@@ -4,12 +4,16 @@ source:
   username: my_optional_username
   password: my_optional_password
   build_context:
-    - build_context:
-        url: https://url/to/git/repo.git
-        username: my_username
-        password: my_password_or_token
-    - Local_path:
-        path: /path/to/local/build/context
+      dir_name: build_context_dir_name
+
+      # local build context
+      path: /path/to/local/build/context
+
+      # for Git build context
+      url: https://url/to/git/repo.git
+      username: my_optional_username
+      password: my_optional_password_or_token
+
 
 target:
   registry_ip: my_registry_ip

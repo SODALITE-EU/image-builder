@@ -1,0 +1,3 @@
+input_dir: tests-json
+output_dir: tests-yaml
+# registry_ip: localhost:5001

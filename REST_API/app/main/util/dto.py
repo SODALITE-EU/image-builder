@@ -42,12 +42,12 @@ class BuildDto:
         'source_url': fields.Url(required=True, description='url of Dockerfile or tar'),
         'source_username': fields.Url(required=False, description='username for Dockerfile or tar'),
         'source_password': fields.Url(required=False, description='password for Dockerfile or tar'),
-        'build_context': fields.List(required=False, description='Build context, if building from Dockerfile',
-                                     cls_or_instance=fields.Nested(git_context)),
+        'build_context': fields.Nested(git_context, required=False, description='Build context, if building from '
+                                                                                'Dockerfile'),
         'target_image_name': fields.String(required=False, description='desired docker image name'),
         'target_image_tag': fields.String(required=False, default='latest', description='desired docker image tag'),
         'target_images': fields.List(required=False, description='List of image variants to build',
-                                    cls_or_instance=fields.Nested(image_variant_context))
+                                     cls_or_instance=fields.Nested(image_variant_context))
     })
 
 

@@ -20,6 +20,7 @@ pipeline {
        flavor_name = "m1.medium"
        ca_crt_file = credentials('xopera-ca-crt')
        ca_key_file = credentials('xopera-ca-key')
+       ansible_python_interpreter = "/usr/bin/python3"
    }
     stages {
         stage ('Pull repo code from github') {
@@ -27,6 +28,20 @@ pipeline {
                 checkout scm
             }
         }
+        stage('Test core engine') {
+            steps {
+                sh  """#!/bin/bash
+                        virtualenv venv-test
+                        . venv-test/bin/activate
+                        python3 -m pip install --upgrade pip
+                        python3 -m pip install ansible docker requests
+                        ansible-galaxy install -r REST_API/requirements.yml
+                        cd REST_API/app/main/service/image_builder/TOSCA/playbooks
+                        ./test.sh $docker_registry_ip
+                     """
+            }
+        }
+
         stage('Build and push image-builder-flask') {
             steps {
                 sh "cd REST_API; docker build -t image-builder-flask -f Dockerfile-flask ."

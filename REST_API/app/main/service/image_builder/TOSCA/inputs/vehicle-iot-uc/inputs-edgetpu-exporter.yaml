@@ -2,8 +2,8 @@ source:
   type: dockerfile
   url: https://raw.githubusercontent.com/adaptant-labs/edgetpu-exporter/master/Dockerfile
   build_context:
-    - edgetpu-exporter:
-        url: https://github.com/adaptant-labs/edgetpu-exporter
+    dir_name: edgetpu-exporter
+    url: https://github.com/adaptant-labs/edgetpu-exporter
 
 target:
   registry_ip: docker.io

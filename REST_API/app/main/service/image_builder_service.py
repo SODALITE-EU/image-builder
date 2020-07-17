@@ -23,13 +23,7 @@ def validate(data: dict):
     target_registry_ip = registry_ip
     image_name = data.get('target_image_name', None)
     image_tag = data.get('target_image_tag', None)
-
-    try:
-        build_context = [{element['dir_name']: {'url': element.get('url'), 'username': element.get('username', None),
-                                                'password': element.get('password', None)}} for element in
-                         data['build_context']]
-    except KeyError:
-        build_context = None
+    build_context = data.get('build_context', None)
 
     try:
         image_variants = [{'image': element.get('image'), 'tag': element.get('tag'), 'base': element.get('base', None)}
