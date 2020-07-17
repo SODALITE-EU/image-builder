@@ -1,0 +1,51 @@
+---
+- hosts: localhost
+  gather_facts: no
+  tasks:
+
+    - name: validate input data
+      assert:
+        that:
+          - input_dir is defined and input_dir is not none
+          - output_dir is defined and output_dir is not none
+          - registry_ip is defined and registry_ip is not none
+
+    - name: Read inputs
+      find:
+        path: "{{ input_dir }}"
+        recurse: yes
+        patterns: '*.json'
+      register: files
+
+    - name: Make output dir
+      file:
+        path: "{{ output_dir }}"
+        state: directory
+
+    - name: Transform json to yaml
+      local_action: copy content="{{ output_yaml }}" dest="{{ output_dir }}/{{ filename | replace('.json','.yaml')}}"
+      vars:
+        output_yaml: "{{ filtered_json | to_nice_yaml }}"
+        filtered_json: {
+          "source": '{{  output_json.source|dict2items|rejectattr("value", "equalto", "")|list|items2dict }}',
+          "target": '{{  output_json.target|dict2items|rejectattr("value", "equalto", "")|list|items2dict }}'
+        }
+        output_json: {
+          "source": {
+            "type": "{{ input_json.source_type | lower }}",
+            "url": "{{ input_json.source_url }}",
+            "username": '{{ input_json.source_username | default("") }}',
+            "password": '{{ input_json.source_password | default("") }}',
+            "build_context": '{{ input_json.build_context | default("") }}',
+          },
+          "target": {
+            "registry_ip": "{{ registry_ip }}",
+            "image_name": "{{ input_json.target_image_name | default('') }}",
+            "image_tag": "{{ input_json.target_image_tag | default('') }}",
+            "images": "{{ input_json.target_images | default('') }}",
+          }
+        }
+        input_json: "{{ lookup('file', filepath ) | from_json }}"
+        filename: "{{ filepath.split('/')[-1] }}"
+        filepath: "{{ item.path }}"
+      loop: "{{ files.files }}"

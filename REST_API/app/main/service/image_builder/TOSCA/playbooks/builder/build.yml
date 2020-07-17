@@ -54,8 +54,6 @@
     - name: set empty build_context
       set_fact:
         build_context: "{{ source.build_context | default([], true) }}"
-    - debug:
-        msg: "{{ build_context.dir_name }}"
 
     - name: Add local build context for Dockerfile
       copy:
