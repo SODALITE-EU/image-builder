@@ -9,7 +9,10 @@ cd "$run_path" || exit
 
 {
   echo "Launching docker_image_definition with xOpera"
-  opera deploy --inputs inputs.yaml image_builder docker_image_definition.yaml
+  opera deploy --inputs inputs.yaml docker_image_definition.yaml
+
+  echo $?
+
 } &> "$logfile"
 
 cd "../../scripts" || exit

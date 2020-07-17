@@ -7,6 +7,20 @@ from pathlib import Path
 import ImageBuilderConfig
 
 
+def parse_log(deploy_location: Path, logfile: str):
+    with (deploy_location / logfile).open('r') as file:
+        logfile = file.readlines()
+        log_str = "".join(logfile[:-1]).casefold()
+    try:
+        status_code = int(logfile[-1])
+        state = "done" if status_code == 0 else "failed"
+    except ValueError:
+        print('Could not read xopera exit code, obtaining status from stacktrace...')
+        failed_keywords = ["fail", "traceback", "error"]
+        state = "failed" if len([i for i in failed_keywords if i in log_str]) != 0 else "done"
+
+    return state, log_str
+
 def main():
     run_path = sys.argv[1]
     session_token = sys.argv[2]
@@ -14,13 +28,7 @@ def main():
     timestamp_start = sys.argv[4]
 
     # reading logfile
-    path_to_logfile = Path(run_path + "/" + logfile)
-    with open(path_to_logfile, 'r') as file:
-        logfile = file.readlines()
-        log_str = "".join(logfile)
-
-    failed_keywords = ["fail", "Traceback", "ERROR", "Error", "error"]
-    state = "failed" if len([i for i in failed_keywords if i in log_str]) != 0 else "done"
+    state, log_str = parse_log(Path(run_path), logfile)
 
     timestamp_end = ImageBuilderConfig.datetime_now_to_string()
     _json = dict()
