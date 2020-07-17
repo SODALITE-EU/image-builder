@@ -5,11 +5,11 @@ image_names=tests/image_names
 # Usage: ./test.sh [registry_ip]
 
 # remove old images
-echo "Removing old docker test images..."
+echo "Cleaning old docker test images..."
 docker rmi $(docker images | grep tests | tr -s ' ' | cut -d ' ' -f 1,2 --output-delimiter=:) > /dev/null 2>&1
 
 # transform tests to yaml
-echo "Running json_to_yaml.yml..."
+echo "Moving json tests to yaml..."
 ansible-playbook --connection=local --inventory localhost, -e 'ansible_python_interpreter="/usr/bin/python3"' -e @tests/params.yaml -e registry_ip="${registry_ip}" tests/json_to_yaml.yml >/dev/null
 
 echo "Testing..."
@@ -18,7 +18,7 @@ return_code=0
 for path in "$test_path"/* ; do
 
   # run test on image builder
-  ERROR=$( ansible-playbook --connection=local --inventory localhost, -e 'ansible_python_interpreter="/usr/bin/python3"' -e @"${path}" -e building_workdir=workdir builder/build.yml -vvv 2>&1)
+  stack_trace=$( ansible-playbook --connection=local --inventory localhost, -e 'ansible_python_interpreter="/usr/bin/python3"' -e @"${path}" -e building_workdir=workdir builder/build.yml -vvv 2>&1)
 
   filename=$(basename "$path")
   test_name="${filename%.*}"
@@ -37,9 +37,9 @@ for path in "$test_path"/* ; do
     else
       echo "TEST $COUNTER....$docker_image_name.....FAILED"
       return_code=1
-      echo "Stacktrace for test $COUNTER...."
-      echo "$ERROR"
-      echo "End of stacktrace for test $COUNTER"
+      echo "-------------------------Stacktrace for TEST $COUNTER-------------------------"
+      echo "$stack_trace"
+      echo "----------------------End of stacktrace for TEST $COUNTER---------------------"
     fi
 
     COUNTER=$((COUNTER+1))
@@ -49,8 +49,11 @@ for path in "$test_path"/* ; do
 done
 
 echo Cleaning up...
+# clean workdir
+rm -rf builder/workdir/
 
-rm -rf rm -rf builder/workdir/
+# remove remaining docker test images
+docker rmi $(docker images | grep tests | tr -s ' ' | cut -d ' ' -f 1,2 --output-delimiter=:) > /dev/null 2>&1
 
 echo Done.
 exit $return_code
