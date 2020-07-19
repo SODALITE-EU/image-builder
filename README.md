@@ -3,15 +3,132 @@
 
 Image builder contains components needed to build images within the SODALITE platform.
 ## docker-image-definition
-docker-image-definition is a TOSCA blueprint, based on tosca_simple_yaml_1_2.
+docker-image-definition is a TOSCA blueprint, based on tosca_simple_yaml_1_3.
 ### Running using xOpera
 Within SODALITE platform, it is executed with [xOpera orchestrator](https://github.com/xlab-si/xopera-opera).
-If using xOpera 1.7 via CLI:
+If using xOpera 0.5.7 via CLI:
     
-    sudo opera deploy -i inputs.yaml image_builder docker_image_definition.yaml
+    opera deploy -i inputs.yaml docker_image_definition.yaml
+
+### How to use image builder
+Image builder has three modes of operating.
+#### TAR
+This mode allows image builder to load already built images and push them to docker registry.
+Docker image can be saved to tar archive with [docker load command](https://docs.docker.com/engine/reference/commandline/save/):
+
+    docker save [image-name] > [tar-name].tar
+
+File inputs.yaml for this mode should follow this template:
+    
+    source:
+      type: tar [required]
+      url: https://url/to/tar/my_image.tar [required]
+      username: my_username [optional]
+      password: my_password_or_token [optional]
+
+    target:
+      registry_ip: my_registry_ip [required]
+      image_name: my_image_name [required]
+      image_tag: my_image_tag [required]
+ 
+Notes:
+- source.url can lead to local file (`file:///path/to/local/image.tar`) or remote file (`https://url/to/tar/my_image.tar`)
+- source.username and source.url are optional
+- computer must have push access to registry
+- image is pushed to `[registry_ip]/[image_name]:[image_tag]`
+
+#### Dockerfile - single image
+This mode builds docker-image from Dockerfile with optional additional build context. Result is single docker image.
+
+File inputs.yaml for this mode should follow this template:
+    
+    source:
+        type: dockerfile [required]
+        url: file:///path/to/Dockerfile [required]
+        username: my_username [optional]
+        password: my_password [optional]
+        build_context: [optional]
+            dir_name: build_context_dir_name [required]
+ 
+            # local build context
+            path: /path/to/local/build/context [required with local build context]
+
+            # for Git build context
+            url: https://url/to/git/repo.git [required with Git build context]
+            username: my_username [optional]
+            password: my_password_or_token [optional]
+
+
+    target:
+        registry_ip: my_registry_ip [required]
+        image_name: my_image_name [required]
+        image_tag: my_image_tag [required]
+
+ 
+Notes:
+- source.url can lead to local file (`file:///path/to/local/image.tar`) or remote file (`https://url/to/tar/my_image.tar`)
+- source.username and source.url are optional
+- build context is optional and can be either local directory or Git repository
+- computer must have push access to registry
+- image is pushed to `[registry_ip]/[image_name]:[image_tag]`
+
+#### Dockerfile - image variants
+This mode builds docker-image from Dockerfile with optional additional build context. Result are one or more image variants.
+Image variants can be achieved using overloading base container. In order to use this feature Dockerfile must be properly upgraded.
+As an example:
+
+	FROM golang as builder
+
+must become:
+
+	ARG BASE_IMAGE=golang
+	FROM ${BASE_IMAGE} as builder
+
+File inputs.yaml for this mode should follow this template:
+    
+    source:
+        type: dockerfile [required]
+        url: file:///path/to/Dockerfile [required]
+        username: my_username [optional]
+        password: my_password [optional]
+        build_context: [optional]
+            dir_name: build_context_dir_name [required]
+ 
+            # local build context
+            path: /path/to/local/build/context [required with local build context]
+
+            # for Git build context
+            url: https://url/to/git/repo.git [required with Git build context]
+            username: my_username [optional]
+            password: my_password_or_token [optional]
+
+
+    target:
+        images: [required, one or more]
+            - image: my_image_name [required]
+              tag: my_image_tag [required]
+        
+            - image: my_image_name [required]
+              tag: my_image_variant_tag [required]
+              base: my_image_variant_base_image [optional]
+
+ 
+Notes:
+- source.url can lead to local file (`file:///path/to/local/image.tar`) or remote file (`https://url/to/tar/my_image.tar`)
+- source.username and source.url are optional
+- build context is optional and can be either local directory or Git repository
+- computer must have push access to registry
+- target image can use default base image (specified in Dockerfile) with `image` and `tag` params
+- target image can use another base image with `image` and `tag` and `base` params
+- all images are pushed to `[registry_ip]/[image]:[tag]`
 
 ### Sample inputs
 Inputs can be found in [docker-image-definition/inputs](docker-image-definition/inputs).
+
+### Tests
+Tests can be run from `REST_API/app/main/service/image_builder/TOSCA/playbooks` directory with:
+
+    ./test.sh <registry_ip>
 
 ## REST API
 
