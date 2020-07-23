@@ -74,15 +74,8 @@ Notes:
 
 #### Dockerfile - image variants
 This mode builds docker-image from Dockerfile with optional additional build context. Result are one or more image variants.
-Image variants can be achieved using overloading base container. In order to use this feature Dockerfile must be properly upgraded.
-As an example:
-
-	FROM golang as builder
-
-must become:
-
-	ARG BASE_IMAGE=golang
-	FROM ${BASE_IMAGE} as builder
+Image variants are built by overloading the base container image, which is injected dynamically at build-time by the
+image builder, both for single and multi-stage builds. No modifications to the Dockerfile are required.
 
 File inputs.yaml for this mode should follow this template:
     
