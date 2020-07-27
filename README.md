@@ -55,6 +55,7 @@ File inputs.yaml for this mode should follow this template:
 
             # for Git build context
             url: https://url/to/git/repo.git [required with Git build context]
+            subdir: path/to/subdir [optional]
             username: my_username [optional]
             password: my_password_or_token [optional]
 
@@ -92,6 +93,7 @@ File inputs.yaml for this mode should follow this template:
 
             # for Git build context
             url: https://url/to/git/repo.git [required with Git build context]
+            subdir: path/to/subdir [optional]
             username: my_username [optional]
             password: my_password_or_token [optional]
 
