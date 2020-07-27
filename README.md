@@ -10,6 +10,14 @@ If using xOpera 0.5.7 via CLI:
     
     opera deploy -i inputs.yaml docker_image_definition.yaml
 
+### Running using the image builder CLI
+
+It is also possible to run the image builder in a self-contained container using a CLI convenience wrapper:
+
+```
+$ image-builder-cli.sh <input.yaml>
+```
+
 ### How to use image builder
 Image builder has three modes of operating.
 #### TAR

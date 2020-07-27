@@ -11,6 +11,7 @@ fi
 components=(
   'flask'
   'nginx'
+  'cli'
 )
 
 for component in "${components[@]}"; do
