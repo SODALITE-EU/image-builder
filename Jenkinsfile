@@ -58,6 +58,14 @@ pipeline {
                 sh "docker push $docker_registry_ip/image-builder-nginx"
             }
         }
+        stage('Build and push image-builder-cli') {
+            when { tag "*" }
+            steps {
+                sh "cd REST_API; docker build -t image-builder-cli -f Dockerfile-cli ."
+                sh "docker tag image-builder-cli $docker_registry_ip/image-builder-cli"
+                sh "docker push $docker_registry_ip/image-builder-cli"
+            }
+        }
         stage('Push image-builder-flask to DockerHub') {
             when { tag "*" }
             steps {
@@ -78,6 +86,18 @@ pipeline {
                             docker tag image-builder-nginx sodaliteh2020/image-builder-nginx
                             git fetch --tags
                             ./make_docker.sh push sodaliteh2020/image-builder-nginx
+                        """
+                }
+            }
+        }
+        stage('Push image-builder-cli to DockerHub') {
+            when { tag "*" }
+            steps {
+                withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
+                    sh  """#!/bin/bash
+                            docker tag image-builder-cli sodaliteh2020/image-builder-cli
+                            git fetch --tags
+                            ./make_docker.sh push sodaliteh2020/image-builder-cli
                         """
                 }
             }
