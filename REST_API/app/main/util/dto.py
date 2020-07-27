@@ -25,7 +25,7 @@ class BuildDto:
     git_context = api.model('git_build_context', {
         'dir_name': fields.String(required=True, description='name of dir, where build context content will be saved, '
                                                              'relative to Dockerfile'),
-
+        'subdir:' fields.String(required=False, description='path to subdirectory within parent where build will be run'),
         'url': fields.String(required=True, description='Git url'),
         'username': fields.String(required=False, description='username for git'),
         'password': fields.String(required=False, description='password for git')

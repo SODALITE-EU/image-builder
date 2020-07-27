@@ -122,7 +122,12 @@
     - name: Set Git repo clone path
       set_fact:
         dir_name: "{{ build_context.dir_name }}"
-      when: dockerfile_mode and build_context_defined
+      when: dockerfile_mode and build_context_defined and build_context.subdir is not defined
+
+    - name: Set Git repo clone path with subdir definition
+      set_fact:
+        dir_name: "{{ build_context.dir_name }}/{{ build_context.subdir }}"
+      when: dockerfile_mode and build_context_defined and build_context.subdir is defined
 
     - name: Set repo_name when build_context is empty
       set_fact:

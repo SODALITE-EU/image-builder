@@ -10,6 +10,7 @@ source:
       path: /path/to/local/build/context
 
       # for Git build context
+      subdir: path/to/optional/subdir
       url: https://url/to/git/repo.git
       username: my_optional_username
       password: my_optional_password_or_token

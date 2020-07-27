@@ -37,6 +37,11 @@ data_types:
         type: string
         description: Name of dir with build context
         required: true
+      subdir:
+        type: string
+        description: Path to subdirectory with build context
+        required: false
+        default: ""
       path:
         type: string
         description: Path to dir with build context
