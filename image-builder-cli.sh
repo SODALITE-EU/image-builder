@@ -2,18 +2,18 @@
 
 [ $# != 1 ] && echo "Usage: $0 input-file.yaml" && exit 1
 
-get_abs_filename() {
-  # $1 : relative filename
-  echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
+get_abs_path() {
+  # $1 : relative path
+  [ ! -z $1 ] && echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
 }
 
-input=$(get_abs_filename $1)
+input=$(get_abs_path $1)
 
 get_extra_volume_mounts() {
   # $1 : input file
 
-  local_dockerfile=$(grep file:\/\/ $1 | sed -e 's/^.*file:\/\///')
-  local_build_context=$(grep path: $1 | sed -e 's/^.*path:[ \t]*//')
+  local_dockerfile=$(get_abs_path $(grep file:\/\/ $1 | sed -e 's/^.*file:\/\///'))
+  local_build_context=$(get_abs_path $(grep path: $1 | sed -e 's/^.*path:[ \t]*//'))
 
   extra_mounts=""
 
