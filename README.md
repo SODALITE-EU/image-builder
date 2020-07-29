@@ -10,6 +10,25 @@ If using xOpera 0.5.7 via CLI:
     
     opera deploy -i inputs.yaml docker_image_definition.yaml
 
+### Running using the image builder CLI
+
+It is also possible to run the image builder in a self-contained container using a CLI convenience wrapper:
+
+```
+$ image-builder-cli.sh <input.yaml>
+```
+
+#### Building the image builder CLI
+
+By default, the included `image-builder-cli.sh` script will use the `sodaliteh2020/image-builder-cli` image. If
+developing the image builder locally, local versions of the CLI container can be built with the supplied Dockerfile:
+
+```
+$ cd REST_API && docker build -t <your tag> -f Dockerfile-cli .
+```
+
+you will then need to fix up the image name in the `image-builder-cli.sh` script to use your local image.
+
 ### How to use image builder
 Image builder has three modes of operating.
 #### TAR

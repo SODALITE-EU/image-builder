@@ -1,0 +1,11 @@
+FROM adaptant/minideb
+
+RUN install_packages python3-pip python3-setuptools
+RUN install_packages git
+RUN pip3 install wheel
+RUN pip3 install opera docker
+
+COPY app/main/service/image_builder/TOSCA/docker_image_definition.yaml /docker_image_definition.yaml
+COPY app/main/service/image_builder/TOSCA/playbooks /playbooks/
+
+CMD [ "opera", "deploy", "-i", "input.yaml", "docker_image_definition.yaml" ]
