@@ -24,7 +24,7 @@ By default, the included `image-builder-cli.sh` script will use the `sodaliteh20
 developing the image builder locally, local versions of the CLI container can be built with the supplied Dockerfile:
 
 ```
-$ cd REST_API && docker build -t <your tag> Dockerfile-cli .
+$ cd REST_API && docker build -t <your tag> -f Dockerfile-cli .
 ```
 
 you will then need to fix up the image name in the `image-builder-cli.sh` script to use your local image.
