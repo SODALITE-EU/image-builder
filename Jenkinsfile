@@ -28,6 +28,7 @@ pipeline {
                 checkout scm
             }
         }
+        /*
         stage('Test core engine') {
             steps {
                 sh  """#!/bin/bash
@@ -41,6 +42,7 @@ pipeline {
                      """
             }
         }
+        */
 
         stage('Test API'){
             steps {
