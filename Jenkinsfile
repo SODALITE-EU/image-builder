@@ -42,6 +42,34 @@ pipeline {
             }
         }
 
+        stage('Test API'){
+            steps {
+                sh  """ #!/bin/bash
+                        virtualenv venv
+                        . venv/bin/activate
+                        cd REST_API/
+                        pip3 install -r requirements.txt
+                        cd app/
+                        touch *.xml
+                        python3 -m pytest --pyargs -s tests --junitxml="results.xml" --cov=./ --cov=./main/controller --cov=./main/model --cov=./main/service --cov=./main/util  --cov=./main --cov-report xml tests/
+                    """
+                   junit 'REST_API/app/results.xml'
+        }
+
+        stage('SonarQube analysis'){
+            environment {
+            scannerHome = tool 'SonarQubeScanner'
+            }
+            steps {
+                withSonarQubeEnv('SonarCloud') {
+                    sh  """ #!/bin/bash
+                            cd REST_API/app/
+                            ${scannerHome}/bin/sonar-scanner
+                        """
+                }
+            }
+        }
+
         stage('Build and push image-builder-flask') {
             when { tag "*" }
             steps {
