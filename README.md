@@ -1,5 +1,5 @@
 # image-builder
-![Build](https://github.com/SODALITE-EU/image-builder/workflows/Build/badge.svg)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=SODALITE-EU_image-builder&metric=alert_status)](https://sonarcloud.io/dashboard?id=SODALITE-EU_image-builder)
 
 Image builder contains components needed to build images within the SODALITE platform.
 ## docker-image-definition
