@@ -54,6 +54,7 @@ pipeline {
                         python3 -m pytest --pyargs -s tests --junitxml="results.xml" --cov=./ --cov=./main/controller --cov=./main/model --cov=./main/service --cov=./main/util  --cov=./main --cov-report xml tests/
                     """
                    junit 'REST_API/app/results.xml'
+             }
         }
 
         stage('SonarQube analysis'){
