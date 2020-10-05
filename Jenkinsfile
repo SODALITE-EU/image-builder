@@ -53,7 +53,7 @@ pipeline {
                         pip3 install -r requirements.txt
                         cd app/
                         touch *.xml
-                        python3 -m pytest --pyargs -s tests --junitxml="results.xml" --cov=./ --cov=./main/controller --cov=./main/model --cov=./main/service --cov=./main/util  --cov=./main --cov-report xml tests/
+                        python3 -m pytest --pyargs -s test --junitxml="results.xml" --cov=./ --cov=./main/controller --cov=./main/model --cov=./main/service --cov=./main/util  --cov=./main --cov-report xml test/
                     """
                    junit 'REST_API/app/results.xml'
              }
