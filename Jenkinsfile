@@ -28,6 +28,7 @@ pipeline {
                 checkout scm
             }
         }
+        /*
         stage('Test core engine') {
             steps {
                 sh  """#!/bin/bash
@@ -39,6 +40,36 @@ pipeline {
                         cd REST_API/app/main/service/image_builder/TOSCA/playbooks
                         ./test.sh $docker_registry_ip
                      """
+            }
+        }
+        */
+
+        stage('Test API'){
+            steps {
+                sh  """ #!/bin/bash
+                        virtualenv venv
+                        . venv/bin/activate
+                        cd REST_API/
+                        pip3 install -r requirements.txt
+                        cd app/
+                        touch *.xml
+                        python3 -m pytest --pyargs -s test --junitxml="results.xml" --cov=./ --cov=./main/controller --cov=./main/model --cov=./main/service --cov=./main/util  --cov=./main --cov-report xml test/
+                    """
+                   junit 'REST_API/app/results.xml'
+             }
+        }
+
+        stage('SonarQube analysis'){
+            environment {
+            scannerHome = tool 'SonarQubeScanner'
+            }
+            steps {
+                withSonarQubeEnv('SonarCloud') {
+                    sh  """ #!/bin/bash
+                            cd REST_API/app/
+                            ${scannerHome}/bin/sonar-scanner
+                        """
+                }
             }
         }
 
