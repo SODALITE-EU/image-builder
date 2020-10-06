@@ -8,8 +8,8 @@
 
     - name: Set custom workdir
       set_fact:
-        workdir: "{{ playbook_dir }}/{{ building_workdir}}/{{ 99999999 | random | to_uuid }}"
-      when: building_workdir is defined and building_workdir is not none
+        workdir: "{{ playbook_dir }}/{{ custom_workdir}}/{{ 99999999 | random | to_uuid }}"
+      when: custom_workdir is defined and custom_workdir is not none
 
     - name: Validate input data
       block:

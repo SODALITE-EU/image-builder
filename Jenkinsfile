@@ -28,23 +28,7 @@ pipeline {
                 checkout scm
             }
         }
-        /*
-        stage('Test core engine') {
-            steps {
-                sh  """#!/bin/bash
-                        virtualenv venv-test
-                        . venv-test/bin/activate
-                        python3 -m pip install --upgrade pip
-                        python3 -m pip install ansible docker requests
-                        ansible-galaxy install -r REST_API/requirements.yml
-                        cd REST_API/app/main/service/image_builder/TOSCA/playbooks
-                        ./test.sh $docker_registry_ip
-                     """
-            }
-        }
-        */
-
-        stage('Test API'){
+        stage('Test image-builder'){
             steps {
                 sh  """ #!/bin/bash
                         virtualenv venv
@@ -53,12 +37,11 @@ pipeline {
                         pip3 install -r requirements.txt
                         cd app/
                         touch *.xml
-                        python3 -m pytest --pyargs -s test --junitxml="results.xml" --cov=./ --cov=./main/controller --cov=./main/model --cov=./main/service --cov=./main/util  --cov=./main --cov-report xml test/
+                        python3 -m pytest --registry_ip $docker_registry_ip --pyargs -s test --junitxml="results.xml" --cov=./ --cov=./main/controller --cov=./main/model --cov=./main/service --cov=./main/util  --cov=./main --cov-report xml test/
                     """
                    junit 'REST_API/app/results.xml'
              }
         }
-
         stage('SonarQube analysis'){
             environment {
             scannerHome = tool 'SonarQubeScanner'
@@ -72,7 +55,6 @@ pipeline {
                 }
             }
         }
-
         stage('Build and push image-builder-flask') {
             when { tag "*" }
             steps {

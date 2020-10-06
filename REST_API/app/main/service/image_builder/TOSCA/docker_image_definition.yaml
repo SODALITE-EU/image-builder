@@ -114,6 +114,11 @@ node_types:
         type: mytypes.Target
         required: true
         description: Target name for docker image
+
+      custom_workdir:
+        type: string
+        required: false
+        description: Dir name of custom workdir, relative to build.yml playbook
     interfaces:
       Standard:
         type: tosca.interfaces.node.lifecycle.Standard
@@ -122,6 +127,7 @@ node_types:
             inputs:
               source:  { default: { get_property: [ SELF, source ] } }
               target:  { default: { get_property: [ SELF, target ] } }
+              custom_workdir:  { default: { get_property: [ SELF, custom_workdir ] } }
             implementation:
               primary: playbooks/builder/build.yml
 topology_template:
@@ -132,6 +138,10 @@ topology_template:
 
     target:
       type: mytypes.Target
+
+    custom_workdir:
+      type: string
+      required: False
 
   node_templates:
     my-workstation:
@@ -147,3 +157,4 @@ topology_template:
       properties:
         source: { get_input: source }
         target: { get_input: target }
+        custom_workdir: {get_input: custom_workdir }
