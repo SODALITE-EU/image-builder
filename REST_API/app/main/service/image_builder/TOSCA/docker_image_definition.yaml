@@ -114,6 +114,11 @@ node_types:
         type: mytypes.Target
         required: true
         description: Target name for docker image
+
+      custom_workdir:
+        type: string
+        required: false
+        description: Dir name of custom workdir, relative to file
     interfaces:
       Standard:
         type: tosca.interfaces.node.lifecycle.Standard
@@ -133,6 +138,10 @@ topology_template:
     target:
       type: mytypes.Target
 
+    custom_workdir:
+      type: string
+      required: False
+
   node_templates:
     my-workstation:
       type: tosca.nodes.Compute
@@ -147,3 +156,4 @@ topology_template:
       properties:
         source: { get_input: source }
         target: { get_input: target }
+        custom_workdir: {get_input: custom_workdir }
