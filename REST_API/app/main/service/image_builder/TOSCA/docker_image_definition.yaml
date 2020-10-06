@@ -118,7 +118,7 @@ node_types:
       custom_workdir:
         type: string
         required: false
-        description: Dir name of custom workdir, relative to file
+        description: Dir name of custom workdir, relative to build.yml playbook
     interfaces:
       Standard:
         type: tosca.interfaces.node.lifecycle.Standard
@@ -127,6 +127,7 @@ node_types:
             inputs:
               source:  { default: { get_property: [ SELF, source ] } }
               target:  { default: { get_property: [ SELF, target ] } }
+              custom_workdir:  { default: { get_property: [ SELF, custom_workdir ] } }
             implementation:
               primary: playbooks/builder/build.yml
 topology_template:
