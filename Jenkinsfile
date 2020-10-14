@@ -31,10 +31,10 @@ pipeline {
         stage('Test image-builder'){
             steps {
                 sh  """ #!/bin/bash
-                        virtualenv venv
-                        . venv/bin/activate
+                        python3 -m venv venv-test
+                        . venv-test/bin/activate
                         cd REST_API/
-                        pip3 install -r requirements.txt
+                        python3 -m pip install -r requirements.txt
                         cd app/
                         touch *.xml
                         python3 -m pytest --registry_ip $docker_registry_ip --pyargs -s test --junitxml="results.xml" --cov=./ --cov=./main/controller --cov=./main/model --cov=./main/service --cov=./main/util  --cov=./main --cov-report xml test/
@@ -58,25 +58,34 @@ pipeline {
         stage('Build and push image-builder-flask') {
             when { tag "*" }
             steps {
-                sh "cd REST_API; docker build -t image-builder-flask -f Dockerfile-flask ."
-                sh "docker tag image-builder-flask $docker_registry_ip/image-builder-flask"
-                sh "docker push $docker_registry_ip/image-builder-flask"
+                sh """#!/bin/bash
+                    cd REST_API
+                    docker build -t image-builder-flask -f Dockerfile-flask .
+                    docker tag image-builder-flask $docker_registry_ip/image-builder-flask
+                    docker push $docker_registry_ip/image-builder-flask
+                   """
             }
         }
         stage('Build and push image-builder-nginx') {
             when { tag "*" }
             steps {
-                sh "cd REST_API; docker build -t image-builder-nginx -f Dockerfile-nginx ."
-                sh "docker tag image-builder-nginx $docker_registry_ip/image-builder-nginx"
-                sh "docker push $docker_registry_ip/image-builder-nginx"
+                sh """#!/bin/bash
+                    cd REST_API
+                    docker build -t image-builder-nginx -f Dockerfile-nginx .
+                    docker tag image-builder-nginx $docker_registry_ip/image-builder-nginx
+                    docker push $docker_registry_ip/image-builder-nginx
+                   """
             }
         }
         stage('Build and push image-builder-cli') {
             when { tag "*" }
             steps {
-                sh "cd REST_API; docker build -t image-builder-cli -f Dockerfile-cli ."
-                sh "docker tag image-builder-cli $docker_registry_ip/image-builder-cli"
-                sh "docker push $docker_registry_ip/image-builder-cli"
+                sh """#!/bin/bash
+                    cd REST_API
+                    docker build -t image-builder-cli -f Dockerfile-cli .
+                    docker tag image-builder-cli $docker_registry_ip/image-builder-cli
+                    docker push $docker_registry_ip/image-builder-cli
+                   """
             }
         }
         stage('Push image-builder-flask to DockerHub') {
@@ -118,29 +127,35 @@ pipeline {
         stage('Install dependencies') {
             when { tag "*" }
             steps {
-                sh "virtualenv venv"
-                sh ". venv/bin/activate; python -m pip install --upgrade pip"
-                sh ". venv/bin/activate; python -m pip install -U 'opera[openstack]<0.5'"
-                sh ". venv/bin/activate; python -m pip install docker"
-                sh ". venv/bin/activate; ansible-galaxy install -r REST_API/requirements.yml"
+                sh """#!/bin/bash
+                      python3 -m venv venv-deploy
+                       . venv-deploy/bin/activate
+                      python3 -m pip install --upgrade pip
+                      python3 -m pip install 'opera[openstack]<0.5' docker
+                      ansible-galaxy install -r REST_API/requirements.yml
+                   """
             }
         }
         stage('Deploy to openstack') {
             when { tag "*" }
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'xOpera_ssh_key', keyFileVariable: 'xOpera_ssh_key_file', usernameVariable: 'xOpera_ssh_username')]) {
-                    sh 'truncate -s 0 image-builder-rest-blueprint/input.yaml'
-                    sh 'echo "ssh-key-name: ${ssh_key_name}" >> image-builder-rest-blueprint/input.yaml'
-                    sh 'echo "image-name: ${image_name}" >> image-builder-rest-blueprint/input.yaml'
-                    sh 'echo "network-name: ${network_name}" >> image-builder-rest-blueprint/input.yaml'
-                    sh 'echo "security-groups: ${security_groups}" >> image-builder-rest-blueprint/input.yaml'
-                    sh 'echo "flavor-name: ${flavor_name}" >> image-builder-rest-blueprint/input.yaml'
-                    sh 'echo "docker-registry-ip: ${docker_registry_ip}" >> image-builder-rest-blueprint/input.yaml'
-                    sh 'echo "identity_file: ${xOpera_ssh_key_file}" >> image-builder-rest-blueprint/input.yaml'
-                    sh 'echo "ca_crt_location: ${ca_crt_file}" >> image-builder-rest-blueprint/input.yaml'
-                    sh 'echo "ca_key_location: ${ca_key_file}" >> image-builder-rest-blueprint/input.yaml'
-                    sh 'cat image-builder-rest-blueprint/input.yaml'
-                    sh ". venv/bin/activate; cd image-builder-rest-blueprint; opera deploy -i input.yaml image-builder service.yaml"
+                    sh """#!/bin/bash
+                        truncate -s 0 image-builder-rest-blueprint/input.yaml
+                        echo "ssh-key-name: ${ssh_key_name}" >> image-builder-rest-blueprint/input.yaml
+                        echo "image-name: ${image_name}" >> image-builder-rest-blueprint/input.yaml
+                        echo "network-name: ${network_name}" >> image-builder-rest-blueprint/input.yaml
+                        echo "security-groups: ${security_groups}" >> image-builder-rest-blueprint/input.yaml
+                        echo "flavor-name: ${flavor_name}" >> image-builder-rest-blueprint/input.yaml
+                        echo "docker-registry-ip: ${docker_registry_ip}" >> image-builder-rest-blueprint/input.yaml
+                        echo "identity_file: ${xOpera_ssh_key_file}" >> image-builder-rest-blueprint/input.yaml
+                        echo "ca_crt_location: ${ca_crt_file}" >> image-builder-rest-blueprint/input.yaml
+                        echo "ca_key_location: ${ca_key_file}" >> image-builder-rest-blueprint/input.yaml
+                        cat image-builder-rest-blueprint/input.yaml
+                        . venv-deploy/bin/activate
+                        cd image-builder-rest-blueprint
+                        opera deploy -i input.yaml image-builder service.yaml
+                       """
                 }
             }
         }
