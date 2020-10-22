@@ -1,9 +1,9 @@
-ssh-key-name: 154-48-185-206-xOpera
+ssh-key-name: [ssh-key-name]
 image-name: centos7
 network-name: orchestrator-net
 security-groups: default,sodalite-remote-access,sodalite-rest
 flavor-name: m1.medium
-docker-registry-ip: 154.48.185.207
+docker-registry-ip: [docker-registry-ip]
 identity_file: /path/to/ssh_key
 ca_crt_location: /home/xopera/certs/ca.crt
 ca_key_location: /home/xopera/certs/ca.key
