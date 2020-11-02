@@ -1,5 +1,6 @@
 ssh-key-name: [ssh-key-name]
 image-name: centos7
+vm-name: image-builder
 network-name: orchestrator-net
 security-groups: default,sodalite-remote-access,sodalite-rest
 flavor-name: m1.medium
