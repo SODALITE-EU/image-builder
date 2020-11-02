@@ -21,6 +21,28 @@ pipeline {
        ca_crt_file = credentials('xopera-ca-crt')
        ca_key_file = credentials('xopera-ca-key')
        ansible_python_interpreter = "/usr/bin/python3"
+
+       // CI-CD vars
+       // When triggered from git tag, $BRANCH_NAME is actually tag_name
+       TAG_SEM_VER_COMPLIANT = """${sh(
+                returnStdout: true,
+                script: './validate_tag.sh SemVar $BRANCH_NAME'
+            )}"""
+
+       TAG_MAJOR_RELEASE = """${sh(
+                returnStdout: true,
+                script: './validate_tag.sh MajRel $BRANCH_NAME'
+            )}"""
+
+       TAG_PRODUCTION = """${sh(
+                returnStdout: true,
+                script: './validate_tag.sh production $BRANCH_NAME'
+            )}"""
+
+       TAG_STAGING = """${sh(
+                returnStdout: true,
+                script: './validate_tag.sh staging $BRANCH_NAME'
+            )}"""
    }
     stages {
         stage ('Pull repo code from github') {
@@ -28,6 +50,19 @@ pipeline {
                 checkout scm
             }
         }
+        stage('Inspect GIT TAG'){
+            steps {
+                sh """ #!/bin/bash
+                echo 'TAG: $BRANCH_NAME'
+                echo 'Tag is compliant with SemVar 2.0.0: $TAG_SEM_VER_COMPLIANT'
+                echo 'Tag is Major release: $TAG_MAJOR_RELEASE'
+                echo 'Tag is production: $TAG_PRODUCTION'
+                echo 'Tag is staging: $TAG_STAGING'
+                """
+            }
+
+        }
+
         stage('Test image-builder'){
             steps {
                 sh  """ #!/bin/bash
@@ -55,77 +90,174 @@ pipeline {
                 }
             }
         }
-        stage('Build and push image-builder-flask') {
-            when { tag "*" }
+        stage('Build image-builder-flask') {
+            when {
+                allOf {
+                    // Triggered on every tag, that is considered for staging or production
+                    expression{tag "*"}
+                    expression{
+                        TAG_STAGING == 'true' || TAG_PRODUCTION == 'true'
+                    }
+                }
+             }
             steps {
                 sh """#!/bin/bash
                     cd REST_API
-                    docker build -t image-builder-flask -f Dockerfile-flask .
-                    docker tag image-builder-flask $docker_registry_ip/image-builder-flask
-                    docker push $docker_registry_ip/image-builder-flask
-                   """
+                    ../make_docker.sh build image-builder-flask Dockerfile-flask
+                    """
             }
         }
-        stage('Build and push image-builder-nginx') {
-            when { tag "*" }
+        stage('Build image-builder-nginx') {
+            when {
+                allOf {
+                    // Triggered on every tag, that is considered for staging or production
+                    expression{tag "*"}
+                    expression{
+                        TAG_STAGING == 'true' || TAG_PRODUCTION == 'true'
+                    }
+                }
+             }
             steps {
                 sh """#!/bin/bash
                     cd REST_API
-                    docker build -t image-builder-nginx -f Dockerfile-nginx .
-                    docker tag image-builder-nginx $docker_registry_ip/image-builder-nginx
-                    docker push $docker_registry_ip/image-builder-nginx
-                   """
+                    ../make_docker.sh build image-builder-nginx Dockerfile-nginx
+                    """
             }
         }
-        stage('Build and push image-builder-cli') {
-            when { tag "*" }
+        stage('Build image-builder-cli') {
+            when {
+                allOf {
+                    // Triggered on every tag, that is considered for staging or production
+                    expression{tag "*"}
+                    expression{
+                        TAG_STAGING == 'true' || TAG_PRODUCTION == 'true'
+                    }
+                }
+             }
             steps {
                 sh """#!/bin/bash
                     cd REST_API
-                    docker build -t image-builder-cli -f Dockerfile-cli .
-                    docker tag image-builder-cli $docker_registry_ip/image-builder-cli
-                    docker push $docker_registry_ip/image-builder-cli
-                   """
+                    ../make_docker.sh build image-builder-cli Dockerfile-cli
+                    """
             }
         }
-        stage('Push image-builder-flask to DockerHub') {
-            when { tag "*" }
+        stage('Push image-builder-flask to sodalite-private-registry') {
+            // Push during staging and production
+            when {
+                allOf {
+                    expression{tag "*"}
+                    expression{
+                        TAG_STAGING == 'true' || TAG_PRODUCTION == 'true'
+                    }
+                }
+            }
             steps {
                 withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
                     sh  """#!/bin/bash
-                            docker tag image-builder-flask sodaliteh2020/image-builder-flask
-                            git fetch --tags
-                            ./make_docker.sh push sodaliteh2020/image-builder-flask
+                            ./make_docker.sh push image-builder-flask staging
+                        """
+                }
+            }
+        }
+        stage('Push image-builder-nginx to sodalite-private-registry') {
+            // Push during staging and production
+            when {
+                allOf {
+                    expression{tag "*"}
+                    expression{
+                        TAG_STAGING == 'true' || TAG_PRODUCTION == 'true'
+                    }
+                }
+            }
+            steps {
+                withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
+                    sh  """#!/bin/bash
+                            ./make_docker.sh push image-builder-nginx staging
+                        """
+                }
+            }
+        }
+        stage('Push image-builder-cli to sodalite-private-registry') {
+            // Push during staging and production
+            when {
+                allOf {
+                    expression{tag "*"}
+                    expression{
+                        TAG_STAGING == 'true' || TAG_PRODUCTION == 'true'
+                    }
+                }
+            }
+            steps {
+                withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
+                    sh  """#!/bin/bash
+                            ./make_docker.sh push image-builder-cli staging
+                        """
+                }
+            }
+        }
+        stage('Push image-builder-flask to DockerHub') {
+            // Only on production tags
+            when {
+                allOf {
+                    expression{tag "*"}
+                    expression{
+                        TAG_PRODUCTION == 'true'
+                    }
+                }
+            }
+            steps {
+                withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
+                    sh  """#!/bin/bash
+                            ./make_docker.sh push image-builder-flask production
                         """
                 }
             }
         }
         stage('Push image-builder-nginx to DockerHub') {
-            when { tag "*" }
+            // Only on production tags
+            when {
+                allOf {
+                    expression{tag "*"}
+                    expression{
+                        TAG_PRODUCTION == 'true'
+                    }
+                }
+            }
             steps {
                 withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
                     sh  """#!/bin/bash
-                            docker tag image-builder-nginx sodaliteh2020/image-builder-nginx
-                            git fetch --tags
-                            ./make_docker.sh push sodaliteh2020/image-builder-nginx
+                            ./make_docker.sh push image-builder-nginx production
                         """
                 }
             }
         }
         stage('Push image-builder-cli to DockerHub') {
-            when { tag "*" }
+            // Only on production tags
+            when {
+                allOf {
+                    expression{tag "*"}
+                    expression{
+                        TAG_PRODUCTION == 'true'
+                    }
+                }
+            }
             steps {
                 withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
                     sh  """#!/bin/bash
-                            docker tag image-builder-cli sodaliteh2020/image-builder-cli
-                            git fetch --tags
-                            ./make_docker.sh push sodaliteh2020/image-builder-cli
+                            ./make_docker.sh push image-builder-cli production
                         """
                 }
             }
         }
-        stage('Install dependencies') {
-            when { tag "*" }
+        stage('Install deploy dependencies') {
+            when {
+                allOf {
+                    expression{tag "*"}
+                    expression{
+                        TAG_STAGING == 'true' || TAG_PRODUCTION == 'true'
+                    }
+                }
+            }
             steps {
                 sh """#!/bin/bash
                       python3 -m venv venv-deploy
@@ -136,8 +268,47 @@ pipeline {
                    """
             }
         }
-        stage('Deploy to openstack') {
-            when { tag "*" }
+        stage('Deploy to openstack for staging') {
+            // Only on staging tags
+            when {
+                allOf {
+                    expression{tag "*"}
+                    expression{
+                        TAG_STAGING == 'true'
+                    }
+                }
+            }
+            environment {
+                // add env var for this stage only
+                vm_name = 'image-builder-dev'
+            }
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'xOpera_ssh_key', keyFileVariable: 'xOpera_ssh_key_file', usernameVariable: 'xOpera_ssh_username')]) {
+                    sh """#!/bin/bash
+                        truncate -s 0 image-builder-rest-blueprint/input.yaml
+                        envsubst < image-builder-rest-blueprint/input.yaml.tmpl > image-builder-rest-blueprint/input.yaml
+                        cat image-builder-rest-blueprint/input.yaml
+                        . venv-deploy/bin/activate
+                        cd image-builder-rest-blueprint
+                        opera deploy -i input.yaml image-builder service.yaml
+                       """
+                }
+            }
+        }
+        stage('Deploy to openstack for production') {
+            // Only on production tags
+            when {
+                allOf {
+                    expression{tag "*"}
+                    expression{
+                        TAG_PRODUCTION == 'true'
+                    }
+                }
+            }
+            environment {
+                // add env var for this stage only
+                vm_name = 'image-builder'
+            }
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'xOpera_ssh_key', keyFileVariable: 'xOpera_ssh_key_file', usernameVariable: 'xOpera_ssh_username')]) {
                     sh """#!/bin/bash

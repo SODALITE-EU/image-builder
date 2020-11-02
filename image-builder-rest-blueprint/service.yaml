@@ -455,7 +455,9 @@ topology_template:
     ssh-key-name:  
       type: string 
     image-name:  
-      type: string 
+      type: string
+    vm-name:
+      type: string
     network-name:  
       type: string 
     security-groups:  
@@ -494,7 +496,7 @@ topology_template:
       properties:  
         key_name:  { get_input: ssh-key-name } 
         image:     { get_input: image-name } 
-        name:  image-builder
+        name:      { get_input: vm-name }
         network:  { get_input: network-name } 
         security_groups:  { get_input: security-groups } 
         flavor:  { get_input: flavor-name }
