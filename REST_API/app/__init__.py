@@ -13,7 +13,7 @@ blueprint = Blueprint('api', __name__)
 
 api = Api(blueprint,
           title='SODALITE image builder REST API',
-          version='beta',
+          version='0.3.0',
           description='RESTful tool for building docker images',
           security='Bearer token',
           authorizations=auth
