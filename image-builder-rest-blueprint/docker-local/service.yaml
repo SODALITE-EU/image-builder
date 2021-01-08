@@ -1,0 +1,193 @@
+tosca_definitions_version: tosca_simple_yaml_1_3
+
+imports:
+  - modules/docker/docker_host.yaml
+  - modules/docker/docker_network.yaml
+  - modules/docker/docker_registry.yaml
+  - modules/docker/docker_component.yaml
+  - modules/docker/docker_certificate.yaml
+  - modules/misc/tls/types.yaml
+  - library/config/types.yaml
+
+node_types:
+
+  sodalite.nodes.SodaliteVM:
+    derived_from: tosca.nodes.Compute
+    properties:
+      username:
+        type: string
+      name:
+        type: string
+        description: Name of machine. Used to write into registry certificate
+
+topology_template:
+
+  inputs:
+    username:
+      type: string
+    docker-network: 
+      type: string
+    docker-public-registry-url:
+      type: string
+      default: ""
+    docker-private-registry-url:
+      type: string
+      default: ""
+    docker-registry-cert-country-name:
+      type: string
+      default: ""
+    docker-registry-cert-organization-name: 
+      type: string
+      default: ""
+    docker-registry-cert-email-address: 
+      type: string
+      default: ""
+    image_builder_env:
+      type: map
+
+  node_templates:
+
+    sodalite-vm:
+      type: sodalite.nodes.SodaliteVM
+      properties:
+        username: { get_input: username }
+        name: localhost
+      attributes:
+        private_address: localhost
+        public_address: localhost
+
+    docker-host:
+      type: sodalite.nodes.DockerHost
+      requirements:
+        - host: sodalite-vm
+
+    docker-network:
+      type: sodalite.nodes.DockerNetwork
+      properties:  
+        name: { get_input: docker-network }
+      requirements:
+        - host: sodalite-vm 
+        - dependency: docker-host
+
+    docker-private-registry-certificate:
+      type: sodalite.nodes.RegistryCertificate
+      properties:
+        registry_ip: { get_input: docker-private-registry-url }
+        country_name: { get_input: docker-registry-cert-country-name }
+        organization_name: { get_input: docker-registry-cert-organization-name }
+        email_address: { get_input: docker-registry-cert-email-address }
+      requirements:
+        - host: sodalite-vm
+        - dependency: docker-host
+        - certs: docker-private-registry-certificate
+
+    docker-private-registry:
+      type: sodalite.nodes.DockerRegistry
+      properties:
+        docker_registry_url: { get_input: docker-private-registry-url }
+      requirements:
+        - host: sodalite-vm
+        - dependency: docker-host
+
+    docker-public-registry:
+      type: sodalite.nodes.DockerRegistry
+      properties:  
+        docker_registry_url: { get_input: docker-public-registry-url } 
+      requirements:
+        - host: sodalite-vm
+        - dependency: docker-host
+
+    # image-builder-api
+    # https://github.com/SODALITE-EU/image-builder
+
+    tls-certs:
+      type: sodalite.nodes.TLS.Certificate
+      properties:
+        country_name:       { get_input: docker-registry-cert-country-name }
+        organization_name:  { get_input: docker-registry-cert-organization-name }
+        email_address:      { get_input: docker-registry-cert-email-address }
+        cert_path: /home/nginx/certs
+       # domain_name:        { get_property: [ SELF, host, public_address ] }
+      requirements:
+        - host: sodalite-vm
+        - dependency: docker-host
+
+    proxy-tls-config:
+      type: sodalite.nodes.Configuration.NginxConfig
+      properties:
+        cert_files_prefix: { get_attribute: [ SELF, dependency, cert_files_prefix ] }
+        dir: /home/nginx
+        filename: certificates.toml
+        template_name: certificates.toml.tmpl
+      requirements:
+        - host: sodalite-vm
+        - dependency: tls-certs
+
+    api:
+      type: sodalite.nodes.DockerizedComponent
+      properties:
+        alias: image-builder-api
+        docker_network_name:  { get_property: [ SELF, network, name ] }
+        image_name: sodaliteh2020/image-builder-api
+        restart_policy: always
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+        labels:
+          traefik.enable: "true"
+          traefik.http.services.api.loadbalancer.server.port: "5000"
+          # http config
+          traefik.http.routers.api.rule: "PathPrefix(`/`)"
+          traefik.http.routers.api.entrypoints: "web"
+          # https config
+          traefik.http.routers.api-https.rule: "PathPrefix(`/`)"
+          traefik.http.routers.api-https.entrypoints: "websecure"
+          traefik.http.routers.api-https.tls: "true"
+        env: { get_input: image_builder_env }
+      requirements:
+        - host: docker-host
+        - registry: docker-public-registry
+        - network: docker-network
+
+    proxy:
+      type: sodalite.nodes.DockerizedComponent
+      properties:
+        alias: image-builder-proxy
+        docker_network_name:  { get_property: [ SELF, network, name ] }
+        image_name: library/traefik:v2.3.4
+        command:
+          - "--accesslog=true"
+          - "--log.level=info"
+          - "--providers.docker=true"
+          - "--providers.docker.exposedbydefault=false"
+          # entrypoints
+          - "--entrypoints.web.address=:5000"
+          - "--entrypoints.websecure.address=:5001"
+          - "--entrypoints.traefik.address=:8888"
+          # http certs config
+          - "--providers.file.directory=/configuration/"
+          - "--providers.file.watch=true"
+          # dashboard
+          - "--api.dashboard=true"
+        restart_policy: always
+        ports:  ['5001:5001', '5000:5000', '8888:8888']
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock:ro
+          - /home/nginx/certificates.toml:/configuration/certificates.toml:ro
+          - /home/nginx/certs:/etc/nginx/certs
+        labels:
+          traefik.enable: "true"
+          traefik.http.routers.traefik.rule: "(PathPrefix(`/traefik`) || PathPrefix(`/api`))"
+          traefik.http.routers.traefik.service: "api@internal"
+          traefik.http.routers.traefik.entrypoints: "traefik"
+          traefik.http.routers.traefik.tls: "true"
+          traefik.http.middlewares.strip.stripprefix.prefixes: "/traefik"
+          traefik.http.routers.traefik.middlewares: "auth, strip"
+          traefik.http.middlewares.auth.digestauth.removeheader: "true"
+          traefik.http.middlewares.auth.digestauth.users: "test:traefik:5200b80022bb7d8e8c8bf2eb34b985cb"
+
+      requirements:
+        - host: docker-host
+        - registry: docker-public-registry   
+        - network: docker-network           
+        - dependency: api
+        - dependency: proxy-tls-config

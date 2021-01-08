@@ -1,0 +1,12 @@
+username: username
+docker-network: sodalite
+docker-public-registry-url: registry.hub.docker.com
+docker-private-registry-url: registry_ip
+docker-registry-cert-country-name: SI
+docker-registry-cert-organization-name: XLAB
+docker-registry-cert-email-address: some.email@email.com
+image_builder_env:
+    SESSION_TIMEOUT: "1440"
+    SECRET_KEY: my_precious_secret_key
+    REGISTRY_IP: registry_ip
+

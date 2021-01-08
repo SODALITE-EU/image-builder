@@ -1,0 +1,17 @@
+ssh-key-name: ${SSH_KEY_NAME}
+vm-name: ${VM_NAME}
+image-name:
+openstack-network-name:
+security-groups:
+flavor-name:
+docker-network: sodalite
+docker-public-registry-url: registry.hub.docker.com
+docker-private-registry-url: $REGISTRY_IP
+docker-registry-cert-country-name: SI
+docker-registry-cert-organization-name: XLAB
+docker-registry-cert-email-address: $SODALITE_EMAIL
+image_builder_env:
+    SESSION_TIMEOUT: "1440"
+    SECRET_KEY: my_precious_secret_key
+    REGISTRY_IP: $REGISTRY_IP
+

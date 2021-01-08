@@ -15,3 +15,7 @@ __pycache__/
 *sodalite-image-builder.sock
 **/image_builder/run/
 image-builder-rest-blueprint/inputs
+*.opera/
+**/modules/
+**/docker-local/library/
+**/openstack/library/
