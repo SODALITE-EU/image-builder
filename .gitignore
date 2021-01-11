@@ -20,3 +20,4 @@ image-builder-rest-blueprint/inputs
 **/modules/
 **/docker-local/library/
 **/openstack/library/
+**/openstack/export.sh

@@ -13,8 +13,8 @@ If using xOpera 0.6.3 via CLI:
 ### Running using the image builder CLI
 
 It is also possible to run the image builder in a self-contained container using a CLI convenience wrapper:
-
-```
+    
+```shell script
 $ image-builder-cli.sh <input.yaml>
 ```
 
@@ -51,10 +51,10 @@ File inputs.yaml for this mode should follow this template:
       image_tag: my_image_tag [required]
  
 Notes:
-- source.url can lead to local file (`file:///path/to/local/image.tar`) or remote file (`https://url/to/tar/my_image.tar`)
-- source.username and source.url are optional
-- computer must have push access to registry
-- image is pushed to `[registry_ip]/[image_name]:[image_tag]`
+  - source.url can lead to local file (`file:///path/to/local/image.tar`) or remote file (`https://url/to/tar/my_image.tar`)
+  - source.username and source.url are optional
+  - computer must have push access to registry
+  - image is pushed to `[registry_ip]/[image_name]:[image_tag]`
 
 #### Dockerfile - single image
 This mode builds docker-image from Dockerfile with optional additional build context. Result is single docker image.
@@ -84,13 +84,12 @@ File inputs.yaml for this mode should follow this template:
         image_name: my_image_name [required]
         image_tag: my_image_tag [required]
 
- 
 Notes:
-- source.url can lead to local file (`file:///path/to/local/image.tar`) or remote file (`https://url/to/tar/my_image.tar`)
-- source.username and source.url are optional
-- build context is optional and can be either local directory or Git repository
-- computer must have push access to registry
-- image is pushed to `[registry_ip]/[image_name]:[image_tag]`
+  - source.url can lead to local file (`file:///path/to/local/image.tar`) or remote file (`https://url/to/tar/my_image.tar`)
+  - source.username and source.url are optional
+  - build context is optional and can be either local directory or Git repository
+  - computer must have push access to registry
+  - image is pushed to `[registry_ip]/[image_name]:[image_tag]`
 
 #### Dockerfile - image variants
 This mode builds docker-image from Dockerfile with optional additional build context. Result are one or more image variants.
@@ -167,7 +166,6 @@ securing an image registry is available [here](https://docs.docker.com/registry/
 If the repository uses certificate-based client-server authentication, signed certificates must be installed in `/etc/docker/certs.d`.
 See the [docker docs](https://docs.docker.com/engine/security/certificates/) for more infoformation.
 
-
 ### Config
 REST API's configuration can be set by setting following environmental variables:
     
@@ -181,19 +179,18 @@ To run locally, use [docker compose](REST_API/docker-compose.yml) or [local TOSC
 #### Script installation
 In order to proceed with local docker installation use `deploy_local.sh` script (for Ubuntu Linux distribution) that checks and installs all components required for deployment (pip, xOpera, Ansible Roles, etc), provides means for setting up input variables necessary for deployment and starts the deployment itself. 
 
-
 ### Remote deploy
 REST API can be deployed remotely using [TOSCA template](image-builder-rest-blueprint/openstack/service.yaml) with compliant orchestrator, for instance [xOpera](https://github.com/xlab-si/xopera-opera).
 #### Steps before deploy
-1. Install pip packages:
+1.  Install pip packages:
     
     `python3 -m pip install opera[openstack]==0.6.2 docker`
 
-2. Install ansible-playbooks:
+2.  Install ansible-playbooks:
 
     `ansible-galaxy install -r image-builder-rest-blueprint/requirements.yml --force`
 
-3. Clone [SODALITE iac-modules (Release 3.0.2)](https://github.com/SODALITE-EU/iac-modules):
+3.  Clone [SODALITE iac-modules (Release 3.0.2)](https://github.com/SODALITE-EU/iac-modules):
     
     `git clone -b 3.0.2 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules`
 
@@ -202,6 +199,7 @@ REST API can be deployed remotely using [TOSCA template](image-builder-rest-blue
     `cp -r image-builder-rest-blueprint/library/ image-builder-rest-blueprint/openstack/library/`
 
 5.  Generate TLS certificate and key files
+    
     ```shell script
     openssl genrsa -out image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.key 4096
     openssl req -new -x509 -key image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.key -out image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.crt
