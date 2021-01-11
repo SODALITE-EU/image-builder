@@ -1,4 +1,5 @@
 *venv/
+*venv*/
 .idea/
 migrations/
 __pycache__/
