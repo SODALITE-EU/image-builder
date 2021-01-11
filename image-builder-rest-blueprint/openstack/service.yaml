@@ -30,6 +30,9 @@ topology_template:
     docker-public-registry-url:
       type: string
       default: ""
+    docker-private-registry-url:
+      type: string
+      default: ""
     docker-registry-cert-country-name:
       type: string
       default: ""
