@@ -20,7 +20,6 @@ pipeline {
        flavor_name = "m1.medium"
        ca_crt_file = credentials('xopera-ca-crt')
        ca_key_file = credentials('xopera-ca-key')
-       ansible_python_interpreter = "/usr/bin/python3"
 
        // CI-CD vars
        // When triggered from git tag, $BRANCH_NAME is actually tag_name
@@ -90,7 +89,7 @@ pipeline {
                 }
             }
         }
-        stage('Build image-builder-flask') {
+        stage('Build image-builder-api') {
             when {
                 allOf {
                     // Triggered on every tag, that is considered for staging or production
@@ -103,24 +102,7 @@ pipeline {
             steps {
                 sh """#!/bin/bash
                     cd REST_API
-                    ../make_docker.sh build image-builder-flask Dockerfile-flask
-                    """
-            }
-        }
-        stage('Build image-builder-nginx') {
-            when {
-                allOf {
-                    // Triggered on every tag, that is considered for staging or production
-                    expression{tag "*"}
-                    expression{
-                        TAG_STAGING == 'true' || TAG_PRODUCTION == 'true'
-                    }
-                }
-             }
-            steps {
-                sh """#!/bin/bash
-                    cd REST_API
-                    ../make_docker.sh build image-builder-nginx Dockerfile-nginx
+                    ../make_docker.sh build image-builder-api Dockerfile
                     """
             }
         }
@@ -141,7 +123,7 @@ pipeline {
                     """
             }
         }
-        stage('Push image-builder-flask to sodalite-private-registry') {
+        stage('Push image-builder-api to sodalite-private-registry') {
             // Push during staging and production
             when {
                 allOf {
@@ -154,25 +136,7 @@ pipeline {
             steps {
                 withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
                     sh  """#!/bin/bash
-                            ./make_docker.sh push image-builder-flask staging
-                        """
-                }
-            }
-        }
-        stage('Push image-builder-nginx to sodalite-private-registry') {
-            // Push during staging and production
-            when {
-                allOf {
-                    expression{tag "*"}
-                    expression{
-                        TAG_STAGING == 'true' || TAG_PRODUCTION == 'true'
-                    }
-                }
-            }
-            steps {
-                withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
-                    sh  """#!/bin/bash
-                            ./make_docker.sh push image-builder-nginx staging
+                            ./make_docker.sh push image-builder-api staging
                         """
                 }
             }
@@ -195,7 +159,7 @@ pipeline {
                 }
             }
         }
-        stage('Push image-builder-flask to DockerHub') {
+        stage('Push image-builder-api to DockerHub') {
             // Only on production tags
             when {
                 allOf {
@@ -208,25 +172,7 @@ pipeline {
             steps {
                 withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
                     sh  """#!/bin/bash
-                            ./make_docker.sh push image-builder-flask production
-                        """
-                }
-            }
-        }
-        stage('Push image-builder-nginx to DockerHub') {
-            // Only on production tags
-            when {
-                allOf {
-                    expression{tag "*"}
-                    expression{
-                        TAG_PRODUCTION == 'true'
-                    }
-                }
-            }
-            steps {
-                withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
-                    sh  """#!/bin/bash
-                            ./make_docker.sh push image-builder-nginx production
+                            ./make_docker.sh push image-builder-api production
                         """
                 }
             }
@@ -261,10 +207,18 @@ pipeline {
             steps {
                 sh """#!/bin/bash
                       python3 -m venv venv-deploy
-                       . venv-deploy/bin/activate
+                      . venv-deploy/bin/activate
                       python3 -m pip install --upgrade pip
-                      python3 -m pip install 'opera[openstack]<0.5' docker
-                      ansible-galaxy install -r REST_API/requirements.yml
+                      python3 -m pip install opera[openstack]==0.6.2 docker
+                      ansible-galaxy install -r image-builder-rest-blueprint/requirements.yml --force
+                      rm -rf image-builder-rest-blueprint/openstack/modules/
+                      git clone -b 3.0.2 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules
+                      rm -rf image-builder-rest-blueprint/openstack/library/
+                      cp -r image-builder-rest-blueprint/library/ image-builder-rest-blueprint/openstack/library/
+                      cp ${ca_crt_file} image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.crt
+                      cp ${ca_crt_file} image-builder-rest-blueprint/openstack/modules/misc/tls/artifacts/ca.crt
+                      cp ${ca_key_file} image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.key
+                      cp ${ca_key_file} image-builder-rest-blueprint/openstack/modules/misc/tls/artifacts/ca.key
                    """
             }
         }
@@ -285,12 +239,12 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'xOpera_ssh_key', keyFileVariable: 'xOpera_ssh_key_file', usernameVariable: 'xOpera_ssh_username')]) {
                     sh """#!/bin/bash
-                        truncate -s 0 image-builder-rest-blueprint/input.yaml
-                        envsubst < image-builder-rest-blueprint/input.yaml.tmpl > image-builder-rest-blueprint/input.yaml
-                        cat image-builder-rest-blueprint/input.yaml
+                        truncate -s 0 image-builder-rest-blueprint/openstack/input.yaml
+                        envsubst < image-builder-rest-blueprint/openstack/input.yaml.tmpl > image-builder-rest-blueprint/openstack/input.yaml
+                        cat image-builder-rest-blueprint/openstack/input.yaml
                         . venv-deploy/bin/activate
-                        cd image-builder-rest-blueprint
-                        opera deploy -i input.yaml image-builder service.yaml
+                        cd image-builder-rest-blueprint/openstack/
+                        opera deploy -i input.yaml service.yaml
                        """
                 }
             }
@@ -312,12 +266,12 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'xOpera_ssh_key', keyFileVariable: 'xOpera_ssh_key_file', usernameVariable: 'xOpera_ssh_username')]) {
                     sh """#!/bin/bash
-                        truncate -s 0 image-builder-rest-blueprint/input.yaml
-                        envsubst < image-builder-rest-blueprint/input.yaml.tmpl > image-builder-rest-blueprint/input.yaml
-                        cat image-builder-rest-blueprint/input.yaml
+                        truncate -s 0 image-builder-rest-blueprint/openstack/input.yaml
+                        envsubst < image-builder-rest-blueprint/openstack/input.yaml.tmpl > image-builder-rest-blueprint/openstack/input.yaml
+                        cat image-builder-rest-blueprint/openstack/input.yaml
                         . venv-deploy/bin/activate
-                        cd image-builder-rest-blueprint
-                        opera deploy -i input.yaml image-builder service.yaml
+                        cd image-builder-rest-blueprint/openstack/
+                        opera deploy -i input.yaml service.yaml
                        """
                 }
             }

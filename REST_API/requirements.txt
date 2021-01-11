@@ -6,7 +6,7 @@ flask-restplus==0.13.0
 Flask-Script==2.0.6
 Flask-SQLAlchemy==2.4.4
 Flask-Testing==0.8.0
-opera==0.5.7
+opera==0.6.3
 psycopg2-binary==2.8.5
 PyJWT==1.7.1
 pytest==6.0.1

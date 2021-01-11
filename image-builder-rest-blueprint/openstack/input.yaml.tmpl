@@ -1,0 +1,20 @@
+ssh-key-name: $ssh_key_name
+image-name: $image_name
+vm-name: $vm_name
+network-name: $network_name
+security-groups: $security_groups
+flavor-name: $flavor_name
+docker-registry-ip: $docker_registry_ip
+ssh_config:
+    IdentityFile: $xOpera_ssh_key_file
+docker-network: sodalite
+docker-public-registry-url: registry.hub.docker.com
+docker-private-registry-url: $docker_registry_ip
+docker-registry-cert-country-name: SI
+docker-registry-cert-organization-name: XLAB
+docker-registry-cert-email-address: cert@sodalite.eu
+image_builder_env:
+    SESSION_TIMEOUT: "1440"
+    SECRET_KEY: my_precious_secret_key
+    REGISTRY_IP: $docker_registry_ip
+

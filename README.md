@@ -6,15 +6,15 @@ Image builder contains components needed to build images within the SODALITE pla
 docker-image-definition is a TOSCA blueprint, based on tosca_simple_yaml_1_3.
 ### Running using xOpera
 Within SODALITE platform, it is executed with [xOpera orchestrator](https://github.com/xlab-si/xopera-opera).
-If using xOpera 0.5.7 via CLI:
+If using xOpera 0.6.3 via CLI:
     
     opera deploy -i inputs.yaml docker_image_definition.yaml
 
 ### Running using the image builder CLI
 
 It is also possible to run the image builder in a self-contained container using a CLI convenience wrapper:
-
-```
+    
+```shell script
 $ image-builder-cli.sh <input.yaml>
 ```
 
@@ -51,10 +51,10 @@ File inputs.yaml for this mode should follow this template:
       image_tag: my_image_tag [required]
  
 Notes:
-- source.url can lead to local file (`file:///path/to/local/image.tar`) or remote file (`https://url/to/tar/my_image.tar`)
-- source.username and source.url are optional
-- computer must have push access to registry
-- image is pushed to `[registry_ip]/[image_name]:[image_tag]`
+  - source.url can lead to local file (`file:///path/to/local/image.tar`) or remote file (`https://url/to/tar/my_image.tar`)
+  - source.username and source.url are optional
+  - computer must have push access to registry
+  - image is pushed to `[registry_ip]/[image_name]:[image_tag]`
 
 #### Dockerfile - single image
 This mode builds docker-image from Dockerfile with optional additional build context. Result is single docker image.
@@ -84,13 +84,12 @@ File inputs.yaml for this mode should follow this template:
         image_name: my_image_name [required]
         image_tag: my_image_tag [required]
 
- 
 Notes:
-- source.url can lead to local file (`file:///path/to/local/image.tar`) or remote file (`https://url/to/tar/my_image.tar`)
-- source.username and source.url are optional
-- build context is optional and can be either local directory or Git repository
-- computer must have push access to registry
-- image is pushed to `[registry_ip]/[image_name]:[image_tag]`
+  - source.url can lead to local file (`file:///path/to/local/image.tar`) or remote file (`https://url/to/tar/my_image.tar`)
+  - source.username and source.url are optional
+  - build context is optional and can be either local directory or Git repository
+  - computer must have push access to registry
+  - image is pushed to `[registry_ip]/[image_name]:[image_tag]`
 
 #### Dockerfile - image variants
 This mode builds docker-image from Dockerfile with optional additional build context. Result are one or more image variants.
@@ -148,7 +147,7 @@ Tests can be run from `REST_API/app/main/service/image_builder/TOSCA/playbooks` 
 
 ### Prerequisites
 
-    - Ubuntu 18.04
+    - Ubuntu 20.04
     - python 3.6 or newer
      
 #### Access to docker registry
@@ -167,7 +166,6 @@ securing an image registry is available [here](https://docs.docker.com/registry/
 If the repository uses certificate-based client-server authentication, signed certificates must be installed in `/etc/docker/certs.d`.
 See the [docker docs](https://docs.docker.com/engine/security/certificates/) for more infoformation.
 
-
 ### Config
 REST API's configuration can be set by setting following environmental variables:
     
@@ -176,29 +174,38 @@ REST API's configuration can be set by setting following environmental variables
     - REGISTRY_IP: IP of docker registry. Default: localhost
     - SQLALCHEMY_DATABASE_URI: link to database. If left unset, local SQLITE instance will be configured and used.
     
-### Install and run
+### Local run
+To run locally, use [docker compose](REST_API/docker-compose.yml) or [local TOSCA template](image-builder-rest-blueprint/docker-local/service.yaml) with compliant orchestrator. It was tested with [opera==0.6.2](https://pypi.org/project/opera/0.6.2/)
+#### Script installation
+In order to proceed with local docker installation use `deploy_local.sh` script (for Ubuntu Linux distribution) that checks and installs all components required for deployment (pip, xOpera, Ansible Roles, etc), provides means for setting up input variables necessary for deployment and starts the deployment itself. 
 
-#### Run in venv (optional, recommended)
-- Installing: `python3 -m pip install --user virtualenv`
-- Creating: `python3 -m venv [venv_name]`
-- Activating: `source [venv_name]/bin/activate`
-
-
-Your python venv must be activated before installation and also before every run.
-
-#### Quick install and run
-To install, test and run, simply run:
-
-    make all
+### Remote deploy
+REST API can be deployed remotely using [TOSCA template](image-builder-rest-blueprint/openstack/service.yaml) with compliant orchestrator, for instance [xOpera](https://github.com/xlab-si/xopera-opera).
+#### Steps before deploy
+1.  Install pip packages:
     
-or run stages separately:
+    `python3 -m pip install opera[openstack]==0.6.2 docker`
+
+2.  Install ansible-playbooks:
+
+    `ansible-galaxy install -r image-builder-rest-blueprint/requirements.yml --force`
+
+3.  Clone [SODALITE iac-modules (Release 3.0.2)](https://github.com/SODALITE-EU/iac-modules):
     
-    make clean
-    make install
-    make database
-    make tests
-    make run
+    `git clone -b 3.0.2 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules`
+
+4.  Copy image-builder TOSCA library
     
+    `cp -r image-builder-rest-blueprint/library/ image-builder-rest-blueprint/openstack/library/`
+
+5.  Generate TLS certificate and key files
+    
+    ```shell script
+    openssl genrsa -out image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.key 4096
+    openssl req -new -x509 -key image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.key -out image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.crt
+    cp image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.key image-builder-rest-blueprint/openstack/modules/misc/tls/artifacts/ca.key
+    cp image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.crt image-builder-rest-blueprint/openstack/modules/misc/tls/artifacts/ca.crt
+    ```
 ### Sample JSON payloads
 Sample JSON payloads to be used with `/build/` endpoint can be found in [JSON-build-params](REST_API/JSON-build-params)
 

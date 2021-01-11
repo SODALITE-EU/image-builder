@@ -125,9 +125,9 @@ node_types:
         operations:
           create:
             inputs:
-              source:  { default: { get_property: [ SELF, source ] } }
-              target:  { default: { get_property: [ SELF, target ] } }
-              custom_workdir:  { default: { get_property: [ SELF, custom_workdir ] } }
+              source:  { default: { get_property: [ SELF, source ] }, type: mytypes.Source }
+              target:  { default: { get_property: [ SELF, target ] }, type: mytypes.Target }
+              custom_workdir:  { default: { get_property: [ SELF, custom_workdir ] }, type: string }
             implementation:
               primary: playbooks/builder/build.yml
 topology_template:
