@@ -6,6 +6,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      SESSION_TIMEOUT: "1440"
+      SECRET_KEY: my_precious_secret_key
+      REGISTRY_IP: [ registry ip here ]
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
     labels:
