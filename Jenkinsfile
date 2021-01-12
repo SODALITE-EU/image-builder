@@ -244,6 +244,7 @@ pipeline {
                         cat image-builder-rest-blueprint/openstack/input.yaml
                         . venv-deploy/bin/activate
                         cd image-builder-rest-blueprint/openstack/
+                        rm -rf .opera
                         opera deploy -i input.yaml service.yaml
                        """
                 }
@@ -271,6 +272,7 @@ pipeline {
                         cat image-builder-rest-blueprint/openstack/input.yaml
                         . venv-deploy/bin/activate
                         cd image-builder-rest-blueprint/openstack/
+                        rm -rf .opera
                         opera deploy -i input.yaml service.yaml
                        """
                 }
