@@ -142,6 +142,7 @@ topology_template:
     custom_workdir:
       type: string
       required: False
+      default: ""
 
   node_templates:
     my-workstation:
