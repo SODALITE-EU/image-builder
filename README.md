@@ -30,7 +30,9 @@ $ cd REST_API && docker build -t <your tag> -f Dockerfile-cli .
 you will then need to fix up the image name in the `image-builder-cli.sh` script to use your local image.
 
 ### How to use image builder
-Image builder has three modes of operating.
+#### Examples
+Every example is in tree forms: [json](REST_API/app/main/service/image_builder/TOSCA/playbooks/tests/tests-json) (for REST API), [yaml](REST_API/app/main/service/image_builder/TOSCA/playbooks/tests/tests-yaml) (for image-builder TOSCA template) and [http-request](api-calls.http).
+
 #### TAR
 This mode allows image builder to load already built images and push them to docker registry.
 Docker image can be saved to tar archive with [docker load command](https://docs.docker.com/engine/reference/commandline/save/):
@@ -134,9 +136,6 @@ Notes:
 - target image can use default base image (specified in Dockerfile) with `image` and `tag` params
 - target image can use another base image with `image` and `tag` and `base` params
 - all images are pushed to `[registry_ip]/[image]:[tag]`
-
-### Sample inputs
-Inputs can be found in [docker-image-definition/inputs](docker-image-definition/inputs).
 
 ### Tests
 Tests can be run from `REST_API/app/main/service/image_builder/TOSCA/playbooks` directory with:

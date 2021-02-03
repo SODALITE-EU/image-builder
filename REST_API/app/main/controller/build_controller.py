@@ -11,10 +11,10 @@ build_params = BuildDto.build_params
 
 @api.route('/')
 class BuildImage(Resource):
-    @token_required
+    # @token_required
     @api.expect(build_params, validate=True)
     @api.response(202, 'Build job accepted')
-    @api.doc('Post build job')  # , security=None)
+    @api.doc('Post build job', security=None)
     def post(self):
         """Request building image"""
         data = request.json
