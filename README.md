@@ -6,7 +6,7 @@ Image builder contains components needed to build images within the SODALITE pla
 docker-image-definition is a TOSCA blueprint, based on tosca_simple_yaml_1_3.
 ### Running using xOpera
 Within SODALITE platform, it is executed with [xOpera orchestrator](https://github.com/xlab-si/xopera-opera).
-If using xOpera 0.6.3 via CLI:
+If using xOpera 0.6.4 via CLI:
     
     opera deploy -i inputs.yaml docker_image_definition.yaml
 
@@ -31,7 +31,7 @@ you will then need to fix up the image name in the `image-builder-cli.sh` script
 
 ### How to use image builder
 #### Examples
-Every example is in tree forms: [json](REST_API/app/main/service/image_builder/TOSCA/playbooks/tests/tests-json) (for REST API), [yaml](REST_API/app/main/service/image_builder/TOSCA/playbooks/tests/tests-yaml) (for image-builder TOSCA template) and [http-request](api-calls.http).
+Every example is in tree forms: [json](src/image_builder/TOSCA/playbooks/tests/tests-json) (for REST API), [yaml](src/image_builder/TOSCA/playbooks/tests/tests-yaml) (for image-builder TOSCA template) and [http-request](api-calls.http).
 
 #### TAR
 This mode allows image builder to load already built images and push them to docker registry.
@@ -138,16 +138,19 @@ Notes:
 - all images are pushed to `[registry_ip]/[image]:[tag]`
 
 ### Tests
-Tests can be run from `REST_API/app/main/service/image_builder/TOSCA/playbooks` directory with:
+Tests can be run from [TOSCA](src/image_builder/TOSCA/playbooks) directory with:
 
     ./test.sh <registry_ip>
 
 ## REST API
 
+### Openapi spec
+Image Builder REST API is build using [Openapi specification](openapi-spec.yml).
+
 ### Prerequisites
 
     - Ubuntu 20.04
-    - python 3.6 or newer
+    - python 3.8 or newer
      
 #### Access to docker registry
 
@@ -167,14 +170,11 @@ See the [docker docs](https://docs.docker.com/engine/security/certificates/) for
 
 ### Config
 REST API's configuration can be set by setting following environmental variables:
-    
-    - SECRET_KEY: key to be used for encoding / decoding Bearer tokens. Default: "my_precious_secret_key"
-    - SESSION_TIMEOUT: time (in minutes) before Bearer token expires. Default: 1440 (1 day)
+
     - REGISTRY_IP: IP of docker registry. Default: localhost
-    - SQLALCHEMY_DATABASE_URI: link to database. If left unset, local SQLITE instance will be configured and used.
     
 ### Local run
-To run locally, use [docker compose](REST_API/docker-compose.yml) or [local TOSCA template](image-builder-rest-blueprint/docker-local/service.yaml) with compliant orchestrator. It was tested with [opera==0.6.2](https://pypi.org/project/opera/0.6.2/)
+To run locally, use [docker compose](docker-compose.yml) or [local TOSCA template](image-builder-rest-blueprint/docker-local/service.yaml) with compliant orchestrator. It was tested with [opera==0.6.4](https://pypi.org/project/opera/0.6.4/)
 #### Script installation
 In order to proceed with local docker installation use `deploy_local.sh` script (for Ubuntu Linux distribution) that checks and installs all components required for deployment (pip, xOpera, Ansible Roles, etc), provides means for setting up input variables necessary for deployment and starts the deployment itself. 
 
@@ -183,15 +183,15 @@ REST API can be deployed remotely using [TOSCA template](image-builder-rest-blue
 #### Steps before deploy
 1.  Install pip packages:
     
-    `python3 -m pip install opera[openstack]==0.6.2 docker`
+    `python3 -m pip install opera[openstack]==0.6.4 docker`
 
 2.  Install ansible-playbooks:
 
     `ansible-galaxy install -r image-builder-rest-blueprint/requirements.yml --force`
 
-3.  Clone [SODALITE iac-modules (Release 3.0.2)](https://github.com/SODALITE-EU/iac-modules):
+3.  Clone [SODALITE iac-modules (Release 3.1.1)](https://github.com/SODALITE-EU/iac-modules):
     
-    `git clone -b 3.0.2 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules`
+    `git clone -b 3.1.1 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules`
 
 4.  Copy image-builder TOSCA library
     
@@ -206,5 +206,5 @@ REST API can be deployed remotely using [TOSCA template](image-builder-rest-blue
     cp image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.crt image-builder-rest-blueprint/openstack/modules/misc/tls/artifacts/ca.crt
     ```
 ### Sample JSON payloads
-Sample JSON payloads to be used with `/build/` endpoint can be found in [JSON-build-params](REST_API/JSON-build-params)
+Sample JSON payloads to be used with `/build/` endpoint can be found in [JSON-build-params](JSON-build-params)
 
