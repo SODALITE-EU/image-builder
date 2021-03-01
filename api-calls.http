@@ -64,13 +64,13 @@ Content-Type: application/json
 # 3. Build from Dockerfile, with build context
 ###
 
-# curl -X POST "http://localhost:8080/build/" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"source_type\": \"Dockerfile\", \"source_url\": \"https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/python_build_context/Dockerfile\", \"build_context\": { \"dir_name\": \"build_context\", \"url\": \"https://github.com/mihaTrajbaric/generic_docker_build_context.git\" }, \"target_image_name\": \"tests/build-context\", \"target_image_tag\": \"latest\"}"
+# curl -X POST "http://localhost:8080/build/" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"source_type\": \"dockerfile\", \"source_url\": \"https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/python_build_context/Dockerfile\", \"build_context\": { \"dir_name\": \"build_context\", \"url\": \"https://github.com/mihaTrajbaric/generic_docker_build_context.git\" }, \"target_image_name\": \"tests/build-context\", \"target_image_tag\": \"latest\"}"
 POST http://localhost:8080/build/
 accept: application/json
 Content-Type: application/json
 
 {
-  "source_type": "Dockerfile",
+  "source_type": "dockerfile",
   "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/python_build_context/Dockerfile",
   "build_context": {
       "dir_name": "build_context",
@@ -84,13 +84,13 @@ Content-Type: application/json
 # 4. Build from Dockerfile, with build context, multiple image variants
 ###
 
-# curl -X POST "http://localhost:8080/build/" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"source_type\": \"Dockerfile\", \"source_url\": \"https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/image-variants/Dockerfile\", \"build_context\": { \"dir_name\": \"generic_build_context\", \"url\": \"https://github.com/mihaTrajbaric/generic_docker_build_context.git\" }, \"target_images\": [ { \"image\": \"tests/image_variants\", \"tag\": \"latest\" }, { \"image\": \"tests/image_variants\", \"tag\": \"python-3.8\", \"base\": \"python:3.8-alpine\" } ]}"
+# curl -X POST "http://localhost:8080/build/" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"source_type\": \"dockerfile\", \"source_url\": \"https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/image-variants/Dockerfile\", \"build_context\": { \"dir_name\": \"generic_build_context\", \"url\": \"https://github.com/mihaTrajbaric/generic_docker_build_context.git\" }, \"target_images\": [ { \"image\": \"tests/image_variants\", \"tag\": \"latest\" }, { \"image\": \"tests/image_variants\", \"tag\": \"python-3.8\", \"base\": \"python:3.8-alpine\" } ]}"
 POST http://localhost:8080/build/
 accept: application/json
 Content-Type: application/json
 
 {
-  "source_type": "Dockerfile",
+  "source_type": "dockerfile",
   "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/image-variants/Dockerfile",
   "build_context": {
       "dir_name": "generic_build_context",
@@ -113,13 +113,13 @@ Content-Type: application/json
 # 5. Build from Dockerfile, with build context in subdir 'no_context'
 ###
 
-# curl -X POST "http://localhost:8080/build/" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"source_type\": \"Dockerfile\", \"source_url\": \"https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile\", \"build_context\": { \"dir_name\": \"image-builder-test-files\", \"subdir\": \"no_context\", \"url\": \"https://github.com/mihaTrajbaric/image-builder-test-files\" }, \"target_image_name\": \"tests/subdir_context\", \"target_image_tag\": \"latest\"}"
+# curl -X POST "http://localhost:8080/build/" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"source_type\": \"dockerfile\", \"source_url\": \"https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile\", \"build_context\": { \"dir_name\": \"image-builder-test-files\", \"subdir\": \"no_context\", \"url\": \"https://github.com/mihaTrajbaric/image-builder-test-files\" }, \"target_image_name\": \"tests/subdir_context\", \"target_image_tag\": \"latest\"}"
 POST http://localhost:8080/build/
 accept: application/json
 Content-Type: application/json
 
 {
-  "source_type": "Dockerfile",
+  "source_type": "dockerfile",
   "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile",
   "build_context": {
       "dir_name": "image-builder-test-files",

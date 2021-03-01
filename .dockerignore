@@ -1,0 +1,17 @@
+.venv/
+venv-test/
+.idea/
+*.iml
+gen/
+Dockerfile
+image-builder-rest-blueprint
+.github
+*.jar
+
+make_docker.sh
+validate_tag.sh
+sonar-project.properties
+
+**/__pycache__/
+**/.pytest_cache/
+**/*.py[cod]

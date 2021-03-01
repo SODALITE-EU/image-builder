@@ -67,10 +67,10 @@ pipeline {
                 sh  """ #!/bin/bash
                         python3 -m venv venv-test
                         . venv-test/bin/activate
-                        cd REST_API/
-                        python3 -m pip install --upgrade pip
-                        python3 -m pip install -r requirements.txt
-                        cd app/
+                        pip3 install --no-cache-dir -r requirements.txt
+                        ./generate.sh
+                        cd src/
+                        touch *.xml
                         python3 -m pytest --registry_ip $docker_registry_ip --pyargs -s test --junitxml="results.xml" --cov=./ --cov=./main/controller --cov=./main/model --cov=./main/service --cov=./main/util  --cov=./main --cov-report xml test/
                     """
                    junit 'REST_API/app/results.xml'
@@ -101,7 +101,6 @@ pipeline {
              }
             steps {
                 sh """#!/bin/bash
-                    cd REST_API
                     ../make_docker.sh build image-builder-api Dockerfile
                     """
             }
@@ -118,7 +117,6 @@ pipeline {
              }
             steps {
                 sh """#!/bin/bash
-                    cd REST_API
                     ../make_docker.sh build image-builder-cli Dockerfile-cli
                     """
             }
@@ -210,7 +208,9 @@ pipeline {
                       . venv-deploy/bin/activate
                       python3 -m pip install --upgrade pip
                       python3 -m pip install opera[openstack]==0.6.4 docker
-                      ansible-galaxy install -r image-builder-rest-blueprint/requirements.yml --force
+                      ansible-galaxy install geerlingguy.pip,2.0.0 --force
+                      ansible-galaxy install geerlingguy.docker,2.9.0 --force
+                      ansible-galaxy install geerlingguy.repo-epel,3.0.0 --force
                       rm -rf image-builder-rest-blueprint/openstack/modules/
                       git clone -b 3.2.3 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules
                       rm -rf image-builder-rest-blueprint/openstack/library/

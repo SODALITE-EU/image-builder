@@ -1,0 +1,21 @@
+{
+  "source_type": "dockerfile",
+  "source_url": "https://raw.githubusercontent.com/adaptant-labs/edgetpu-exporter/master/Dockerfile",
+  "build_context": [
+    {
+      "dir_name": "edgetpu-exporter",
+      "url": "https://github.com/adaptant-labs/edgetpu-exporter"
+    }
+  ],
+  "target_images": [
+    {
+      "image": "adaptant/edgetpu-exporter",
+      "tag": "latest"
+    },
+    {
+      "image": "adaptant/edgetpu-exporter",
+      "tag": "go1.13",
+      "base": "golang:1.13"
+    }
+  ]
+}
