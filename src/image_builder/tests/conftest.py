@@ -19,7 +19,7 @@ tests_path = tosca_path / 'playbooks' / 'tests'
 
 
 def pytest_addoption(parser):
-    parser.addoption("--registry_ip", action="store", help='api url', default='77.231.202.207')
+    parser.addoption("--registry_ip", action="store", help='api url', default='localhost')
 
 
 def find_images(client: DockerClient, substring: str):

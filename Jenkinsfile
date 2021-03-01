@@ -72,10 +72,10 @@ pipeline {
                         ./generate.sh
                         cd src/
                         touch *.xml
-                        python3 -m pytest --registry_ip $docker_registry_ip --pyargs -s test --junitxml="results.xml" --cov=./ --cov=./main/controller --cov=./main/model --cov=./main/service --cov=./main/util  --cov=./main --cov-report xml test/
+                        python3 -m pytest --registry_ip $docker_registry_ip image_builder --pyargs -s --junitxml=results.xml --cov=./image_builder/api/ --cov=./image_builder/tests/ --cov=./image_builder/api/settings --cov=./image_builder/api/service --cov=./image_builder/api/util --cov=./image_builder/api/controllers --cov-report xml
                     """
-                   junit 'REST_API/app/results.xml'
-             }
+                junit 'src/results.xml'
+            }
         }
         stage('SonarQube analysis'){
             environment {
@@ -84,7 +84,6 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarCloud') {
                     sh  """ #!/bin/bash
-                            cd REST_API/app/
                             ${scannerHome}/bin/sonar-scanner
                         """
                 }
