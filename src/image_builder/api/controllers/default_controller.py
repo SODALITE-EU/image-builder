@@ -1,22 +1,18 @@
-import connexion
 import json
 
-from image_builder.api.openapi.models.build_params import BuildParams  # noqa: E501
-from image_builder.api.openapi.models.invocation import Invocation  # noqa: E501
-from image_builder.api.openapi import util
-from image_builder.api.service import image_builder_service
-from image_builder.api.service.invocation_service import InvocationService
+import connexion
 
 from image_builder.api.log import get_logger
+from image_builder.api.openapi.models.build_params import BuildParams
+from image_builder.api.openapi.models.invocation import Invocation
+from image_builder.api.service.invocation_service import InvocationService
 
 logger = get_logger(__name__)
 invocation_service = InvocationService()
 
 
-def get_status(build_id):  # noqa: E501
+def get_status(build_id):
     """check status
-
-     # noqa: E501
 
     :param build_id: Id of image-building Invocation
     :type build_id: str
@@ -27,15 +23,14 @@ def get_status(build_id):  # noqa: E501
     return inv, 200
 
 
-def post_build():  # noqa: E501
+def post_build():
     """Request building image
 
      # noqa: E501
 
     :rtype: Invocation
     """
-    # if connexion.request.is_json:
-    build_params = BuildParams.from_dict(connexion.request.get_json())  # noqa: E501
+    build_params = BuildParams.from_dict(connexion.request.get_json())
 
     logger.info(json.dumps(build_params.to_dict(), indent=2))
 

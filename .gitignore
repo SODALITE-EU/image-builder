@@ -4,6 +4,7 @@ venv-test/
 *.iml
 gen/
 src/image_builder/api/openapi/
+src/.opera-api/
 image-builder-rest-blueprint/docker-local/modules
 image-builder-rest-blueprint/docker-local/.opera
 image-builder-rest-blueprint/docker-local/library

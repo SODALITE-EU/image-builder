@@ -2,14 +2,13 @@ import datetime
 import json
 import multiprocessing
 import os
+import tempfile
 import traceback
 import uuid
-import tempfile
-from typing import Optional
 from pathlib import Path
+from typing import Optional
 
 from opera.storage import Storage
-
 
 from image_builder.api.log import get_logger
 from image_builder.api.openapi.models import Invocation, InvocationState, BuildParams

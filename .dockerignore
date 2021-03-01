@@ -4,6 +4,7 @@ venv-test/
 *.iml
 gen/
 Dockerfile
+src/.opera-api/
 image-builder-rest-blueprint
 .github
 *.jar
