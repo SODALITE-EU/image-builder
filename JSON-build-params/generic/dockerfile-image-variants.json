@@ -3,14 +3,12 @@
   "source_url": "https://link/to/Dockerfile",
   "source_username": "my_optional_username",
   "source_password": "my_optional_password",
-  "build_context": [
-    {
+  "build_context": {
       "dir_name": "my_build_context_dir_name",
       "url": "https://url/to/git/repo/with/build_context.git",
       "username": "my_username",
       "password": "my_password_or_token"
-    }
-  ],
+  },
   "target_images": [
     {
       "image": "image_name_1",
