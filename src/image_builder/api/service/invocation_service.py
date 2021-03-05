@@ -32,14 +32,13 @@ class InvocationWorkerProcess(multiprocessing.Process):
 
         while True:
             inv: Invocation = work_queue.get(block=True)
+            inv.timestamp_start = datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
 
             with tempfile.TemporaryDirectory() as stdstream_dir:
-                # stdout&err
+                # stdout
                 file_stdout = open(InvocationWorkerProcess.stdout_file(stdstream_dir), "w")
-                file_stderr = open(InvocationWorkerProcess.stderr_file(stdstream_dir), "w")
 
                 os.dup2(file_stdout.fileno(), 1)
-                os.dup2(file_stderr.fileno(), 2)
 
                 inv.state = InvocationState.IN_PROGRESS
                 InvocationService.save_invocation(inv)
@@ -47,22 +46,18 @@ class InvocationWorkerProcess(multiprocessing.Process):
                 try:
                     image_builder_service.build_image(inv)
                     inv.state = InvocationState.SUCCESS
-                    # inv.outputs = outputs or None
                 except BaseException as e:
                     if isinstance(e, RuntimeError):
                         raise e
                     inv.state = InvocationState.FAILED
-                    inv.exception = "{}: {}\n\n{}".format(e.__class__.__name__, str(e), traceback.format_exc())
 
-                file_stdout.flush()
-                file_stderr.flush()
-                stdout = InvocationWorkerProcess.read_file(InvocationWorkerProcess.stdout_file(stdstream_dir))
-                stderr = InvocationWorkerProcess.read_file(InvocationWorkerProcess.stderr_file(stdstream_dir))
-                file_stdout.truncate()
-                file_stderr.truncate()
+                    logger.exception("{}: {}\n\n{}".format(e.__class__.__name__, str(e), traceback.format_exc()))
+                    file_stdout.close()
+                    inv.response = InvocationWorkerProcess.read_file(InvocationWorkerProcess.stdout_file(stdstream_dir))
 
-                inv.stdout = stdout
-                inv.stderr = stderr
+
+
+                inv.timestamp_end = datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
 
                 InvocationService.save_invocation(inv)
 
@@ -92,15 +87,13 @@ class InvocationService:
         now = datetime.datetime.now(tz=datetime.timezone.utc)
 
         inv = Invocation()
-        inv.job_id = uuid.uuid4()
+        inv.invocation_id = uuid.uuid4()
         inv.build_params = data
         inv.state = InvocationState.PENDING
-        inv.timestamp = now.isoformat()
-        inv.exception = None
-        inv.stdout = None
-        inv.stderr = None
+        inv.timestamp_submission = now.isoformat()
+        inv.response = None
 
-        logger.info("ImageBuilding with ID %s at %s", inv.job_id, now.isoformat())
+        logger.info("ImageBuilding with ID %s at %s", inv.invocation_id, now.isoformat())
 
         self.save_invocation(inv)
         self.work_queue.put(inv)
@@ -120,7 +113,10 @@ class InvocationService:
         #     return None
         storage = Storage.create(".opera-api")
         filename = "invocation-{}.json".format(job_id)
-        dump = storage.read_json(filename)
+        try:
+            dump = storage.read_json(filename)
+        except FileNotFoundError:
+            return None
         return Invocation.from_dict(dump)
 
     @classmethod
@@ -128,6 +124,6 @@ class InvocationService:
         # TODO database
         # SQL_database.update_deployment_log(invocation_id, inv)
         storage = Storage.create(".opera-api")
-        filename = "invocation-{}.json".format(inv.job_id)
+        filename = "invocation-{}.json".format(inv.invocation_id)
         dump = json.dumps(inv.to_dict(), cls=image_builder_util.UUIDEncoder)
         storage.write(dump, filename)
