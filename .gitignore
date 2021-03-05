@@ -1,10 +1,14 @@
 .venv/
 venv-test/
+venv-deploy/
 .idea/
 *.iml
 gen/
 src/image_builder/api/openapi/
 src/.opera-api/
+src/coverage.xml
+src/.coverage
+src/results.xml
 image-builder-rest-blueprint/docker-local/modules
 image-builder-rest-blueprint/docker-local/.opera
 image-builder-rest-blueprint/docker-local/library

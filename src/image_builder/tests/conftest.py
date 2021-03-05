@@ -124,7 +124,7 @@ def generic_build_params():
 def generic_invocation():
     now = datetime.datetime.now(tz=datetime.timezone.utc)
     inv = Invocation()
-    inv.job_id = uuid.uuid4()
+    inv.invocation_id = uuid.uuid4()
     inv.build_params = BuildParams.from_dict({
         "source_type": "dockerfile",
         "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile",
@@ -132,10 +132,8 @@ def generic_invocation():
         "target_image_tag": "latest"
     })
     inv.state = InvocationState.PENDING
-    inv.timestamp = now.isoformat()
-    inv.exception = None
-    inv.stdout = None
-    inv.stderr = None
+    inv.timestamp_submission = now.isoformat()
+    inv.response = None
     return inv
 
 

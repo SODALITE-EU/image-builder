@@ -71,7 +71,6 @@ pipeline {
                         pip3 install --no-cache-dir -r requirements.txt
                         ./generate.sh
                         cd src/
-                        touch *.xml
                         python3 -m pytest --registry_ip $docker_registry_ip image_builder --pyargs -s --junitxml=results.xml --cov=./image_builder/api/ --cov=./image_builder/tests/ --cov=./image_builder/api/settings --cov=./image_builder/api/service --cov=./image_builder/api/util --cov=./image_builder/api/controllers --cov-report xml
                     """
                 junit 'src/results.xml'
@@ -101,7 +100,7 @@ pipeline {
              }
             steps {
                 sh """#!/bin/bash
-                    ../make_docker.sh build image-builder-api Dockerfile
+                    ./make_docker.sh build image-builder-api Dockerfile
                     """
             }
         }
@@ -117,7 +116,7 @@ pipeline {
              }
             steps {
                 sh """#!/bin/bash
-                    ../make_docker.sh build image-builder-cli Dockerfile-cli
+                    ./make_docker.sh build image-builder-cli Dockerfile-cli
                     """
             }
         }
@@ -209,7 +208,7 @@ pipeline {
                       python3 -m pip install --upgrade pip
                       python3 -m pip install opera[openstack]==0.6.4 docker
                       ansible-galaxy install geerlingguy.pip,2.0.0 --force
-                      ansible-galaxy install geerlingguy.docker,2.9.0 --force
+                      ansible-galaxy install geerlingguy.docker,3.0.0 --force
                       ansible-galaxy install geerlingguy.repo-epel,3.0.0 --force
                       rm -rf image-builder-rest-blueprint/openstack/modules/
                       git clone -b 3.2.3 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules

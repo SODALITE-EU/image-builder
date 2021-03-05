@@ -21,9 +21,9 @@ class TestInvocationService:
 
     def test_save_load_invocation(self, generic_invocation: Invocation):
         inv = generic_invocation
-        inv.job_id = uuid.uuid4()
+        inv.invocation_id = uuid.uuid4()
         InvocationService.save_invocation(inv)
-        inv_new = InvocationService.load_invocation(inv.job_id)
+        inv_new = InvocationService.load_invocation(inv.invocation_id)
         assert_that(inv_new.to_dict()).contains_only(*inv.to_dict().keys())
 
     def test_invoke(self, mocker, monkeypatch, generic_build_params: BuildParams, generic_invocation: Invocation):
