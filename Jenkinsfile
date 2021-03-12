@@ -68,9 +68,9 @@ pipeline {
                         python3 -m venv venv-test
                         . venv-test/bin/activate
                         cd REST_API/
+                        python3 -m pip install --upgrade pip
                         python3 -m pip install -r requirements.txt
                         cd app/
-                        touch *.xml
                         python3 -m pytest --registry_ip $docker_registry_ip --pyargs -s test --junitxml="results.xml" --cov=./ --cov=./main/controller --cov=./main/model --cov=./main/service --cov=./main/util  --cov=./main --cov-report xml test/
                     """
                    junit 'REST_API/app/results.xml'
@@ -209,10 +209,10 @@ pipeline {
                       python3 -m venv venv-deploy
                       . venv-deploy/bin/activate
                       python3 -m pip install --upgrade pip
-                      python3 -m pip install opera[openstack]==0.6.2 docker
+                      python3 -m pip install opera[openstack]==0.6.4 docker
                       ansible-galaxy install -r image-builder-rest-blueprint/requirements.yml --force
                       rm -rf image-builder-rest-blueprint/openstack/modules/
-                      git clone -b 3.0.2 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules
+                      git clone -b 3.2.3 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules
                       rm -rf image-builder-rest-blueprint/openstack/library/
                       cp -r image-builder-rest-blueprint/library/ image-builder-rest-blueprint/openstack/library/
                       cp ${ca_crt_file} image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.crt
