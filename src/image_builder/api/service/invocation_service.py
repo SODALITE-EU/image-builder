@@ -54,9 +54,9 @@ class InvocationWorkerProcess(multiprocessing.Process):
 
                     logger.exception("{}: {}\n\n{}".format(e.__class__.__name__, str(e), traceback.format_exc()))
 
-                    sys.stdout.flush()
-                    inv.response = InvocationWorkerProcess.read_file(InvocationWorkerProcess.stdout_file(stdstream_dir))
-                    file_stdout.close()
+                sys.stdout.flush()
+                inv.response = InvocationWorkerProcess.read_file(InvocationWorkerProcess.stdout_file(stdstream_dir))
+                file_stdout.close()
 
                 inv.timestamp_end = datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
 

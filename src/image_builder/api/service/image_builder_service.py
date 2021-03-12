@@ -51,5 +51,5 @@ def build_image(inv: Invocation):
             opera_storage = Storage.create(".opera")
             service_template = "docker_image_definition.yaml"
             opera_deploy(service_template, validate(inv.build_params), opera_storage,
-                         verbose_mode=True, num_workers=1, delete_existing_state=True)
+                         verbose_mode=False, num_workers=1, delete_existing_state=True)
             return opera_outputs(opera_storage)
