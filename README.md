@@ -206,5 +206,8 @@ REST API can be deployed remotely using [TOSCA template](image-builder-rest-blue
     cp image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.crt image-builder-rest-blueprint/openstack/modules/misc/tls/artifacts/ca.crt
     ```
 ### Sample JSON payloads
-Sample JSON payloads to be used with `/build/` endpoint can be found in [JSON-build-params](JSON-build-params)
+Sample JSON payloads to be used with `/build/` endpoint can be found in [JSON-build-params](JSON-build-params).
+
+### Python client
+Convenianc Python client (Python 3.8) can send json payload and waits for the response (see [client.py](client.py)).
 
