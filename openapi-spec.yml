@@ -1,0 +1,173 @@
+openapi: 3.0.1
+info:
+  title: SODALITE Image Builder REST API
+  description: RESTful tool for building docker images
+  version: 1.0.0
+paths:
+  /build/:
+    post:
+      summary: Request building image
+      operationId: post_build
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuildParams'
+        required: true
+      responses:
+        202:
+          description: Build invocation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildingStarted'
+  /status/{invocation_id}:
+    get:
+      summary: check status
+      operationId: get_status
+      parameters:
+      - name: invocation_id
+        in: path
+        description: Id of image-building Invocation
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Invocation found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invocation'
+        404:
+          description: Invocation not found
+          content:
+            application/json:
+              schema:
+                type: string
+components:
+  schemas:
+    BuildParams:
+      required:
+      - source_type
+      - source_url
+      type: object
+      properties:
+        source_type:
+          $ref: '#/components/schemas/SourceType'
+        source_url:
+          type: string
+          description: url of Dockerfile or tar
+        source_username:
+          type: string
+          description: username for Dockerfile or tar
+        source_password:
+          type: string
+          description: password for Dockerfile or tar
+        build_context:
+          type: object
+          description: Build context, if building from Dockerfile
+          allOf:
+          - $ref: '#/components/schemas/GitBuildContext'
+        target_image_name:
+          type: string
+          description: desired docker image name
+        target_image_tag:
+          type: string
+          description: desired docker image tag
+          default: latest
+        target_images:
+          type: array
+          description: List of image variants to build
+          items:
+            $ref: '#/components/schemas/ImageVariantContext'
+    GitBuildContext:
+      required:
+      - dir_name
+      - url
+      type: object
+      properties:
+        dir_name:
+          type: string
+          description: name of dir, where build context content will be saved, relative
+            to Dockerfile
+        subdir:
+          type: string
+          description: path to subdirectory within parent where build will be run
+        url:
+          type: string
+          description: Git url
+        username:
+          type: string
+          description: username for git
+        password:
+          type: string
+          description: password for git
+    ImageVariantContext:
+      required:
+      - image
+      - tag
+      type: object
+      properties:
+        image:
+          type: string
+          description: desired docker image name
+        tag:
+          type: string
+          description: desired docker image tag
+        base:
+          type: string
+          description: desired base image to build on
+    BuildingStarted:
+      description: Object with invocation_id
+      type: object
+      required:
+        - invocation_id
+      properties:
+        invocation_id:
+          description: Id of image-building job
+          type: string
+          format: uuid
+    Invocation:
+      description: An invocation of image builder.
+      type: object
+      required:
+        - invocation_id
+        - state
+        - timestamp_submission
+      properties:
+        invocation_id:
+          description: Id of image-building job
+          type: string
+          format: uuid
+        state:
+          $ref: "#/components/schemas/InvocationState"
+        timestamp_submission:
+          description: An ISO8601 timestamp of submission of invocation.
+          type: string
+          format: date-time
+        timestamp_start:
+          description: An ISO8601 timestamp of start of image-building
+          type: string
+          format: date-time
+        timestamp_end:
+          description: An ISO8601 timestamp of end of image-building
+          type: string
+          format: date-time
+        build_params:
+          $ref: "#/components/schemas/BuildParams"
+        response:
+          description: Stactrace in case of failure
+          type: string
+    InvocationState:
+      type: string
+      enum:
+        - pending
+        - in_progress
+        - success
+        - failed
+    SourceType:
+      type: string
+      enum:
+        - dockerfile
+        - tar

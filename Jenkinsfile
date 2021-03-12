@@ -67,14 +67,14 @@ pipeline {
                 sh  """ #!/bin/bash
                         python3 -m venv venv-test
                         . venv-test/bin/activate
-                        cd REST_API/
-                        python3 -m pip install --upgrade pip
-                        python3 -m pip install -r requirements.txt
-                        cd app/
-                        python3 -m pytest --registry_ip $docker_registry_ip --pyargs -s test --junitxml="results.xml" --cov=./ --cov=./main/controller --cov=./main/model --cov=./main/service --cov=./main/util  --cov=./main --cov-report xml test/
+                        pip3 install --upgrade pip
+                        pip3 install --no-cache-dir -r requirements.txt
+                        ./generate.sh
+                        cd src/
+                        python3 -m pytest --registry_ip $docker_registry_ip image_builder --pyargs -s --junitxml=results.xml --cov=./image_builder/api/ --cov=./image_builder/tests/ --cov=./image_builder/api/settings --cov=./image_builder/api/service --cov=./image_builder/api/util --cov=./image_builder/api/controllers --cov-report xml
                     """
-                   junit 'REST_API/app/results.xml'
-             }
+                junit 'src/results.xml'
+            }
         }
         stage('SonarQube analysis'){
             environment {
@@ -83,7 +83,6 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarCloud') {
                     sh  """ #!/bin/bash
-                            cd REST_API/app/
                             ${scannerHome}/bin/sonar-scanner
                         """
                 }
@@ -101,8 +100,7 @@ pipeline {
              }
             steps {
                 sh """#!/bin/bash
-                    cd REST_API
-                    ../make_docker.sh build image-builder-api Dockerfile
+                    ./make_docker.sh build image-builder-api Dockerfile
                     """
             }
         }
@@ -118,8 +116,7 @@ pipeline {
              }
             steps {
                 sh """#!/bin/bash
-                    cd REST_API
-                    ../make_docker.sh build image-builder-cli Dockerfile-cli
+                    ./make_docker.sh build image-builder-cli Dockerfile-cli
                     """
             }
         }
@@ -210,7 +207,9 @@ pipeline {
                       . venv-deploy/bin/activate
                       python3 -m pip install --upgrade pip
                       python3 -m pip install opera[openstack]==0.6.4 docker
-                      ansible-galaxy install -r image-builder-rest-blueprint/requirements.yml --force
+                      ansible-galaxy install geerlingguy.pip,2.0.0 --force
+                      ansible-galaxy install geerlingguy.docker,3.0.0 --force
+                      ansible-galaxy install geerlingguy.repo-epel,3.0.0 --force
                       rm -rf image-builder-rest-blueprint/openstack/modules/
                       git clone -b 3.2.3 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules
                       rm -rf image-builder-rest-blueprint/openstack/library/

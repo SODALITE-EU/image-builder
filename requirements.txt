@@ -1,0 +1,21 @@
+# xopera-opera
+opera==0.6.4
+
+# docker
+docker==4.4.4
+
+# openapi
+connexion[swagger-ui] >= 2.7.0
+python-dateutil >= 2.8.1
+tornado==6.1
+
+# PostgreSQL
+psycopg2==2.8.6
+
+# testing
+pytest
+pytest-cov
+pytest-mock
+assertpy
+validators
+psutil
