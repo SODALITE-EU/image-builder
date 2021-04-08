@@ -189,9 +189,9 @@ REST API can be deployed remotely using [TOSCA template](image-builder-rest-blue
 
     `ansible-galaxy install -r image-builder-rest-blueprint/requirements.yml --force`
 
-3.  Clone [SODALITE iac-modules (Release 3.2.3)](https://github.com/SODALITE-EU/iac-modules/releases/tag/3.2.3):
+3.  Clone [SODALITE iac-modules (Release 3.4.1)](https://github.com/SODALITE-EU/iac-modules/releases/tag/3.4.1):
     
-    `git clone -b 3.2.3 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules`
+    `git clone -b 3.4.1 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules`
 
 4.  Copy image-builder TOSCA library
     

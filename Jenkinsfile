@@ -211,7 +211,7 @@ pipeline {
                       ansible-galaxy install geerlingguy.docker,3.0.0 --force
                       ansible-galaxy install geerlingguy.repo-epel,3.0.0 --force
                       rm -rf image-builder-rest-blueprint/openstack/modules/
-                      git clone -b 3.2.3 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules
+                      git clone -b 3.4.1 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules
                       rm -rf image-builder-rest-blueprint/openstack/library/
                       cp -r image-builder-rest-blueprint/library/ image-builder-rest-blueprint/openstack/library/
                       cp ${ca_crt_file} image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.crt
