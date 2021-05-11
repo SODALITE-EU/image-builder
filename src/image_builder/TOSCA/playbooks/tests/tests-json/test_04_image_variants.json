@@ -2,7 +2,6 @@
   "source_type": "dockerfile",
   "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/image-variants/Dockerfile",
   "build_context": {
-      "dir_name": "generic_build_context",
       "url": "https://github.com/mihaTrajbaric/generic_docker_build_context.git"
     },
   "target_images": [

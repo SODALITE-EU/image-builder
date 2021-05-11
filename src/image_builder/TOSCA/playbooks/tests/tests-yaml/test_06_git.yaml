@@ -1,0 +1,8 @@
+source:
+  repo:
+    url: https://github.com/mihaTrajbaric/generic_repo.git
+  type: git
+target:
+  image_name: tests/git
+  image_tag: latest
+  registry_ip: localhost:5001
