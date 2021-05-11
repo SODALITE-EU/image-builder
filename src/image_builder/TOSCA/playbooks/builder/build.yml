@@ -9,7 +9,12 @@
     - name: Set custom workdir
       set_fact:
         workdir: "{{ playbook_dir }}/{{ custom_workdir}}/{{ 99999999 | random | to_uuid }}"
-      when: custom_workdir is defined and custom_workdir is not none
+      when: custom_workdir is defined and custom_workdir is not none and custom_workdir != ""
+
+    - name: Set default values for docker build
+      set_fact:
+        build_workdir: "{{ workdir }}"
+        dockerfile_path: "{{ workdir }}/Dockerfile"
 
     - name: Validate input data
       block:
@@ -21,40 +26,45 @@
             target_image_defined: "{{ target.image_name is defined and target.image_name is not none and target.image_tag is defined and target.image_tag is not none | bool }}"
             target_images_defined: "{{ target.images is defined and target.images is not none | bool }}"
             build_context_defined: "{{ source.build_context is defined and source.build_context is not none | bool }}"
+            git_repo_defined: "{{ source.repo is defined and source.repo is not none | bool }}"
 
         - name: Determine current image building mode
           set_fact:
             tar_mode: "{{ source.type == 'tar' and target_image_defined and not target_images_defined and not build_context_defined | bool }}"
-            dockerfile_single_image_mode: "{{ source.type == 'dockerfile' and target_image_defined and not target_images_defined | bool }}"
-            dockerfile_image_variants_mode: "{{ source.type == 'dockerfile' and target_images_defined and not target_image_defined | bool }}"
             dockerfile_mode: "{{ source.type == 'dockerfile' }}"
+            git_mode: "{{ source.type == 'git' and  git_repo_defined | bool }}"
+
+        - name: Determine target mode
+          set_fact:
+            single_image_mode: "{{ target_image_defined and not target_images_defined and (dockerfile_mode or git_mode) | bool }}"
+            image_variants_mode: "{{ target_images_defined and not target_image_defined and (dockerfile_mode or git_mode) | bool }}"
+
 
         - name: Validate input data
           assert:
             that:
-              - source_url_defined
               - target_registry_defined
-              - tar_mode or dockerfile_single_image_mode or dockerfile_image_variants_mode
-
-    - name: set url
-      set_fact:
-        url: "{{ source.url }}"
+              - tar_mode or dockerfile_mode or git_mode
+              - single_image_mode or image_variants_mode or tar_mode
 
     - name: Create workdir
       file:
         path: "{{ workdir }}"
         state: directory
 
+    # mode: dockerfile or tar
+
+    - name: set url
+      set_fact:
+        url: "{{ source.url }}"
+      when: source_url_defined
+
     - name: Authenticate url
       set_fact:
         url: "https://{{ source.username }}:{{ source.password }}@{{ source.url[8:] }}"
-      when: source_authentication
+      when: source_url_defined and source_authentication
 
-    - name: Download Dockerfile
-      get_url:
-        url: "{{ source.url }}"
-        dest: "{{ workdir }}/Dockerfile"
-      when: dockerfile_mode
+    # mode: dockerfile
 
     - name: set empty build_context
       set_fact:
@@ -63,7 +73,7 @@
     - name: Add local build context for Dockerfile
       copy:
         src: "{{ path }}"
-        dest: "{{ workdir }}/{{ build_context.dir_name }}"
+        dest: "{{ workdir }}"
       vars:
         path: "{{ build_context.path if build_context.path[-1] == '/' else build_context.path+'/' }}"
       when: dockerfile_mode and build_context.path is defined
@@ -71,12 +81,57 @@
     - name: Add build context for Dockerfile from git
       git:
         repo: "{{ git_url }}"
-        dest: "{{ workdir }}/{{ build_context.dir_name }}"
+        dest: "{{ workdir }}"
       vars:
         authentication: "{{ build_context.password is defined and build_context.password is not none and build_context.username is defined and build_context.username is not none }}"
         url_authentication: "https://{{ build_context.username | default(omit) }}:{{ build_context.password | default(omit) }}@{{ build_context.url[8:] }}"
         git_url: "{{ url_authentication if authentication == true else build_context.url }}"
       when: dockerfile_mode and build_context.url is defined
+
+    - name: Download Dockerfile
+      get_url:
+        url: "{{ source.url }}"
+        dest: "{{ workdir }}/Dockerfile"
+      when: dockerfile_mode
+
+    - name: Set Git repo clone path with subdir definition
+      set_fact:
+        build_workdir: "{{ workdir }}/{{ build_context.subdir }}"
+      when: dockerfile_mode and build_context_defined and build_context.subdir is defined
+
+    # mode: git
+    - name: Pull git repository
+      git:
+        repo: "{{ git_url }}"
+        dest: "{{ workdir }}"
+      vars:
+        authentication: "{{ source.repo.password is defined and source.repo.password is not none and source.repo.username is defined and source.repo.username is not none }}"
+        url_authentication: "https://{{ source.repo.username | default(omit) }}:{{ source.repo.password | default(omit) }}@{{ source.repo.url[8:] }}"
+        git_url: "{{ url_authentication if authentication == true else source.repo.url }}"
+      when: git_mode
+
+    - name: Set build workdir
+      set_fact:
+        build_workdir: "{{ workdir }}/{{ source.repo.workdir }}"
+      when: source.repo.workdir is defined and source.repo.workdir is not none
+
+    - name: Set dockerfile path
+      set_fact:
+        dockerfile_path: "{{ workdir }}/{{ source.repo.dockerfile }}"
+      when: source.repo.dockerfile is defined and source.repo.dockerfile is not none
+
+    # set vars for
+#    - name: Set Git repo clone path
+#      set_fact:
+#        dir_name: "{{ build_context.dir_name }}"
+#      when: dockerfile_mode and build_context_defined and build_context.subdir is not defined
+
+    # default: workdir: {{ workdir }}
+    #          dockerfile_path:
+
+
+
+    # mode: tar
 
     - name: Download archive
       get_url:
@@ -119,21 +174,6 @@
         state: absent
       when: tar_mode
 
-    - name: Set Git repo clone path
-      set_fact:
-        dir_name: "{{ build_context.dir_name }}"
-      when: dockerfile_mode and build_context_defined and build_context.subdir is not defined
-
-    - name: Set Git repo clone path with subdir definition
-      set_fact:
-        dir_name: "{{ build_context.dir_name }}/{{ build_context.subdir }}"
-      when: dockerfile_mode and build_context_defined and build_context.subdir is defined
-
-    - name: Set repo_name when build_context is empty
-      set_fact:
-        dir_name: ""
-      when: dockerfile_mode and not build_context_defined
-
     - name: Preparing Dockerfile for BASE_IMAGE injection
       # Match both 'FROM base' and 'FROM base as xxx' cases, with and without :version specifications.
       # This will rewrite the first instance of the FROM line to be:
@@ -144,31 +184,31 @@
       # allowing the BASE_IMAGE to be overloaded by the image builder when building image variants.
       shell: sed -i -e '1 s/\(FROM\) \([a-z:]*\)\([ \t].*$\)/ARG BASE_IMAGE=\2\n\1 \${BASE_IMAGE}\3/' \
                     -e '1 s/\(FROM\) \([a-z:].*$\)/ARG BASE_IMAGE=\2\n\1 \${BASE_IMAGE}/' \
-                   "{{ workdir }}/Dockerfile"
+                   "{{ dockerfile_path }}"
       args:
         # sed does a better job of this than the replace module, silence warnings about its use.
         warn: false
-      when: dockerfile_image_variants_mode
+      when: image_variants_mode
 
     - name: Extract default base image from Dockerfile
-      shell: sed q "{{ workdir }}/Dockerfile" | sed -e 's/^.*=//g'
+      shell: sed q "{{ dockerfile_path }}" | sed -e 's/^.*=//g'
       register: base_image_data
       args:
         warn: false
-      when: dockerfile_image_variants_mode
+      when: image_variants_mode
 
     - name: Preserving default base image
       set_fact:
         default_base_image: "{{ base_image_data.stdout }}"
-      when: dockerfile_image_variants_mode
+      when: image_variants_mode
 
     # Build and push image variants
     - name: Build image variants and push them
       docker_image:
         source: build
         build:
-          path: "{{ workdir }}/{{ dir_name }}"
-          dockerfile: "{{ workdir }}/Dockerfile"
+          path: "{{ build_workdir }}"
+          dockerfile: "{{ dockerfile_path }}"
           args:
             BASE_IMAGE: "{{ item.base | default(default_base_image, true) }}"
           pull: yes
@@ -176,7 +216,7 @@
         force_source: yes
         repository: "{{ target.registry_ip }}/{{ item.image }}:{{ item.tag }}"
         push: yes
-      when: dockerfile_image_variants_mode
+      when: image_variants_mode
       loop: "{{ target.images | default([], True) }}"
 
     # Build and push a single target image
@@ -184,14 +224,14 @@
       docker_image:
         source: build
         build:
-          path: "{{ workdir }}/{{ dir_name }}"
-          dockerfile: "{{ workdir }}/Dockerfile"
+          path: "{{ build_workdir }}"
+          dockerfile: "{{ dockerfile_path }}"
           pull: yes
         name: "{{ target.image_name }}"
         force_source: yes
         repository: "{{ target.registry_ip }}/{{ target.image_name }}:{{ target.image_tag }}"
         push: yes
-      when: dockerfile_single_image_mode
+      when: single_image_mode
 
     - name: Load image from archive and push it
       docker_image:

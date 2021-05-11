@@ -50,25 +50,29 @@ components:
     BuildParams:
       required:
       - source_type
-      - source_url
       type: object
       properties:
         source_type:
           $ref: '#/components/schemas/SourceType'
         source_url:
           type: string
-          description: url of Dockerfile or tar
+          description: Url to source (if source_type == dockerfile or tar)
         source_username:
           type: string
-          description: username for Dockerfile or tar
+          description: Username for source (if source_type == dockerfile or tar)
         source_password:
           type: string
-          description: password for Dockerfile or tar
+          description: Password for source (if source_type == dockerfile or tar)
         build_context:
           type: object
-          description: Build context, if building from Dockerfile
+          description: Optional build context, if source_type == dockerfile
           allOf:
           - $ref: '#/components/schemas/GitBuildContext'
+        source_repo:
+          type: object
+          description: Git repository with dockerile and app code (if source_type == git)
+          allOf:
+          - $ref: '#/components/schemas/GitRepo'
         target_image_name:
           type: string
           description: desired docker image name
@@ -81,28 +85,45 @@ components:
           description: List of image variants to build
           items:
             $ref: '#/components/schemas/ImageVariantContext'
+    GitRepo:
+      required:
+        - url
+      type: object
+      properties:
+        url:
+          type: string
+          description: Url to git repository
+        username:
+          type: string
+          description: Username for git repository
+        password:
+          type: string
+          description: Password for git repository
+        workdir:
+          type: string
+          description: Docker build workdir, relative to git repo's root dir
+          default: .
+        dockerfile:
+          type: string
+          description: Path to dockerfile inside repository
+          default: Dockerfile
     GitBuildContext:
       required:
-      - dir_name
       - url
       type: object
       properties:
-        dir_name:
-          type: string
-          description: name of dir, where build context content will be saved, relative
-            to Dockerfile
-        subdir:
-          type: string
-          description: path to subdirectory within parent where build will be run
         url:
           type: string
-          description: Git url
+          description: Url to git repo with build context
         username:
           type: string
-          description: username for git
+          description: Username for git
         password:
           type: string
-          description: password for git
+          description: Password for git
+        subdir:
+          type: string
+          description: Path to subdirectory within parent where build will be run
     ImageVariantContext:
       required:
       - image
@@ -111,13 +132,13 @@ components:
       properties:
         image:
           type: string
-          description: desired docker image name
+          description: Desired docker image name
         tag:
           type: string
-          description: desired docker image tag
+          description: Desired docker image tag
         base:
           type: string
-          description: desired base image to build on
+          description: Desired base image to build on
     BuildingStarted:
       description: Object with invocation_id
       type: object
@@ -170,4 +191,5 @@ components:
       type: string
       enum:
         - dockerfile
+        - git
         - tar

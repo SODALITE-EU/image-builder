@@ -1,5 +1,6 @@
 import tempfile
 from distutils import dir_util
+import json
 
 from opera.commands.deploy import deploy_service_template as opera_deploy
 from opera.commands.outputs import outputs as opera_outputs
@@ -21,6 +22,11 @@ def validate(data: BuildParams):
         build_context = None
 
     try:
+        repo = data.source_repo.to_dict()
+    except AttributeError:
+        repo = None
+
+    try:
         image_variants = [{'image': element.image, 'tag': element.tag, 'base': element.base or None}
                           for element in data.target_images]
     except TypeError:
@@ -32,7 +38,8 @@ def validate(data: BuildParams):
             "url": data.source_url,
             "username": data.source_username,
             "password": data.source_password,
-            "build_context": build_context
+            "build_context": build_context,
+            "repo": repo
         },
         "target": {
             "registry_ip": Settings.registry_ip,
@@ -50,6 +57,8 @@ def build_image(inv: Invocation):
         with image_builder_util.cwd(workdir):
             opera_storage = Storage.create(".opera")
             service_template = "docker_image_definition.yaml"
-            opera_deploy(service_template, validate(inv.build_params), opera_storage,
+            build_params = validate(inv.build_params)
+            logger.info(json.dumps(build_params))
+            opera_deploy(service_template, build_params, opera_storage,
                          verbose_mode=False, num_workers=1, delete_existing_state=True)
             return opera_outputs(opera_storage)

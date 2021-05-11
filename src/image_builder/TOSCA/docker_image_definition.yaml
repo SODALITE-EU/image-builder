@@ -7,7 +7,7 @@ data_types:
     properties:
       type:
         type: string
-        description: One of (dockerfile, tar)
+        description: One of (dockerfile, tar, git)
       url:
         type: string
         description: Url of dockerfile or tarfile.
@@ -26,17 +26,47 @@ data_types:
         type: mytypes.BuildContext
         required: false
         default: ""
-        description: BuildContext used . Can be used with type -> dockerfile.
+        description: Optional build context, if type == dockerfile
+      repo:
+        type: mytypes.GitRepo
+        required: false
+        default: ""
+        description: Git repository with dockerile and app code (if type == git)
+
+  mytypes.GitRepo:
+    derived_from: map
+    description: Git repository with dockerile and app code
+    properties:
+      url:
+        type: string
+        description: Url to git repository
+        required: true
+      username:
+        type: string
+        description: Username for git repository
+        required: false
+        default: ""
+      password:
+        type: string
+        description: Password for git repository
+        required: false
+        default: ""
+      workdir:
+        type: string
+        description: Docker build workdir, relative to git repo's root dir
+        required: false
+        default: .
+      dockerfile:
+        type: string
+        description: Path to dockerfile inside repository
+        default: Dockerfile
+        required: false
 
 
   mytypes.BuildContext:
     derived_from: map
-    description: Git repo with buildcontext for dockerfile. Name of element is mapped to target dir name.
+    description: Git repo with buildcontext for dockerfile.
     properties:
-      dir_name:
-        type: string
-        description: Name of dir with build context
-        required: true
       subdir:
         type: string
         description: Path to subdirectory with build context
