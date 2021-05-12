@@ -120,17 +120,6 @@
         dockerfile_path: "{{ workdir }}/{{ source.repo.dockerfile }}"
       when: source.repo.dockerfile is defined and source.repo.dockerfile is not none
 
-    # set vars for
-#    - name: Set Git repo clone path
-#      set_fact:
-#        dir_name: "{{ build_context.dir_name }}"
-#      when: dockerfile_mode and build_context_defined and build_context.subdir is not defined
-
-    # default: workdir: {{ workdir }}
-    #          dockerfile_path:
-
-
-
     # mode: tar
 
     - name: Download archive
