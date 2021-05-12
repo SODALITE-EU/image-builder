@@ -4,29 +4,27 @@ import json
 import os
 import shutil
 import uuid
-from pathlib import Path
 from contextlib import contextmanager
-
+from pathlib import Path
 
 import docker
 import psutil
 import pytest
 from docker import DockerClient
+from opera.commands.deploy import deploy_service_template as opera_deploy
+from opera.error import OperationError
+from opera.storage import Storage
 
 from image_builder.api.cli import test
 from image_builder.api.openapi.models import BuildParams, Invocation, InvocationState
 from image_builder.api.service.image_builder_service import validate
-from opera.commands.deploy import deploy_service_template as opera_deploy
-from opera.storage import Storage
-from opera.error import OperationError
-
 
 tosca_path = (Path(__file__).parent.parent / "TOSCA")
-tests_path = Path(__file__).parent / 'integration'
+test_build_params = Path(__file__).parent / '02_integration' / 'build_params'
 
 
 def pytest_addoption(parser):
-    parser.addoption("--registry_ip", action="store", help='api url', default='localhost')
+    parser.addoption("--registry_ip", action="store", help='registry url', default='localhost')
 
 
 def find_images(client: DockerClient, substring: str):
@@ -64,14 +62,12 @@ def json_to_yaml(test_path: Path, registry_ip: str):
 
     return yaml_test
 
-    # yaml_path.open('w').write(yaml.dump(yaml_test))
-
 
 def run_test(registry_ip: str, test_name: str):
     """
     Runs yaml test and returns exit_code
     """
-    test_path = tests_path / 'build_params' / f'{test_name}.json'
+    test_path = test_build_params / f'{test_name}.json'
 
     inputs = json_to_yaml(test_path, registry_ip)
     with cwd(tosca_path):
@@ -91,7 +87,7 @@ def check_image(client: DockerClient, registry_ip: str, test_name: str):
     Check if docker image(s) have been created
     """
 
-    image_name_path = tests_path / 'image_names' / (test_name + '.txt')
+    image_name_path = test_build_params / (test_name + '.name')
 
     # read file with image_names
     for line in image_name_path.open('r').readlines():
@@ -119,6 +115,15 @@ def core_test_tools(pytestconfig):
     # cleanup
     delete_images(client, 'tests')
 
+
+@contextmanager
+def cwd(path):
+    old_pwd = os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(old_pwd)
 
 @pytest.fixture()
 def generic_build_params():
@@ -167,13 +172,3 @@ def kill_tree(pid, including_parent=True):
 
     if including_parent:
         parent.kill()
-
-
-@contextmanager
-def cwd(path):
-    old_pwd = os.getcwd()
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        os.chdir(old_pwd)
