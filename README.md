@@ -2,145 +2,117 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=SODALITE-EU_image-builder&metric=alert_status)](https://sonarcloud.io/dashboard?id=SODALITE-EU_image-builder)
 
 Image builder contains components needed to build images within the SODALITE platform.
-## docker-image-definition
-docker-image-definition is a TOSCA blueprint, based on tosca_simple_yaml_1_3.
-### Running using xOpera
-Within SODALITE platform, it is executed with [xOpera orchestrator](https://github.com/xlab-si/xopera-opera).
-If using xOpera 0.6.4 via CLI:
-    
-    opera deploy -i inputs.yaml docker_image_definition.yaml
 
-### Running using the image builder CLI
+# How to use image-builder
 
-It is also possible to run the image builder in a self-contained container using a CLI convenience wrapper:
-    
-```shell script
-$ image-builder-cli.sh <input.yaml>
+## Examples
+Every example is in two forms: [json](build-params/JSON_(API)) (for REST API) and [yaml](build-params/YAML_(TOSCA)) (for image-builder TOSCA template).
+
+## GIT
+The simplest option for building docker images is to provide git repository with app code and dockerfile.
+
+```json
+{
+  "source_type": "git",
+  "source_repo": {
+      "url": "https://github.com/mihaTrajbaric/generic_repo"
+    },
+  "target_image_name": "image_git",
+  "target_image_tag": "latest"
+}
+```
+Image builder will assume repository contains Dockerfile in repo's root dir of default branch and will use it for workdir during building process.
+It will build image with tag `test_image:latest`, which will be pushed to preconfigured docker registry.
+
+### Additional options
+Additional options for git mode include:
+- git authentication
+- version (branch name, tag name, HEAD)
+- Name or relative path of dockerfile (default: Dockerfile)
+- workdir (default: . )
+```json
+{
+  "source_type": "git",
+  "source_repo": {
+      "url": "https://github.com/mihaTrajbaric/generic-repo-2",
+      "username": "git_username",
+      "password": "git_password_or_token",
+      "dockerfile": "docker_dir/Dockerfile",
+      "workdir": "code_dir",
+      "version": "HEAD"
+    },
+  "target_image_name": "image_git",
+  "target_image_tag": "additional_options"
+}
+```
+## Dockerfile
+### No build context
+Image builder can build image from standalone dockerfile without any build context.
+```json
+{
+  "source_type": "dockerfile",
+  "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile",
+  "target_image_name": "image_dockerfile",
+  "target_image_tag": "no_context"
+}
 ```
 
-#### Building the image builder CLI
-
-By default, the included `image-builder-cli.sh` script will use the `sodaliteh2020/image-builder-cli` image. If
-developing the image builder locally, local versions of the CLI container can be built with the supplied Dockerfile:
-
+### Build context
+Image builder can add arbitrary git repository for build context. It will insert dockerfile into root dir of repository.
+```json
+{
+  "source_type": "dockerfile",
+  "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/python_build_context/Dockerfile",
+  "build_context": {
+      "url": "https://github.com/mihaTrajbaric/generic_docker_build_context.git"
+    },
+  "target_image_name": "image_dockerfile",
+  "target_image_tag": "build_context"
+}
 ```
-$ cd REST_API && docker build -t <your tag> -f Dockerfile-cli .
+
+### Additional options
+Additional options for dockerfile mode:
+- url authentication
+- build_context options
+    - git authentication
+    - subdir (relative path inside repo where build must be run)
+
+```json
+{
+  "source_type": "dockerfile",
+  "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile",
+  "source_username": "source_username",
+  "source_password": "source_password_or_token",
+  "build_context": {
+      "url": "https://github.com/mihaTrajbaric/image-builder-test-files",
+      "username": "git_username",
+      "password": "git_password",
+      "subdir": "no_context"
+    },
+  "target_image_name": "image_dockerfile",
+  "target_image_tag": "additional_options"
+}
 ```
 
-you will then need to fix up the image name in the `image-builder-cli.sh` script to use your local image.
-
-### How to use image builder
-#### Examples
-Every example is in tree forms: [json](src/image_builder/TOSCA/playbooks/tests/tests-json) (for REST API), [yaml](src/image_builder/TOSCA/playbooks/tests/tests-yaml) (for image-builder TOSCA template) and [http-request](api-calls.http).
-
-#### TAR
-This mode allows image builder to load already built images and push them to docker registry.
+## TAR
+This mode allows image builder to load already built image and push it to docker registry.
 Docker image can be saved to tar archive with [docker load command](https://docs.docker.com/engine/reference/commandline/save/):
 
     docker save [image-name] > [tar-name].tar
 
-File inputs.yaml for this mode should follow this template:
-    
-    source:
-      type: tar [required]
-      url: https://url/to/tar/my_image.tar [required]
-      username: my_username [optional]
-      password: my_password_or_token [optional]
+```json
+{
+  "source_type": "tar",
+  "source_url": "https://github.com/mihaTrajbaric/image-builder-test-files/blob/master/hello-world.tar?raw=true",
+  "target_image_name": "image_tar",
+  "target_image_tag": "latest"
+}
+```
 
-    target:
-      registry_ip: my_registry_ip [required]
-      image_name: my_image_name [required]
-      image_tag: my_image_tag [required]
- 
-Notes:
-  - source.url can lead to local file (`file:///path/to/local/image.tar`) or remote file (`https://url/to/tar/my_image.tar`)
-  - source.username and source.url are optional
-  - computer must have push access to registry
-  - image is pushed to `[registry_ip]/[image_name]:[image_tag]`
-
-#### Dockerfile - single image
-This mode builds docker-image from Dockerfile with optional additional build context. Result is single docker image.
-
-File inputs.yaml for this mode should follow this template:
-    
-    source:
-        type: dockerfile [required]
-        url: file:///path/to/Dockerfile [required]
-        username: my_username [optional]
-        password: my_password [optional]
-        build_context: [optional]
-            dir_name: build_context_dir_name [required]
- 
-            # local build context
-            path: /path/to/local/build/context [required with local build context]
-
-            # for Git build context
-            url: https://url/to/git/repo.git [required with Git build context]
-            subdir: path/to/subdir [optional]
-            username: my_username [optional]
-            password: my_password_or_token [optional]
-
-
-    target:
-        registry_ip: my_registry_ip [required]
-        image_name: my_image_name [required]
-        image_tag: my_image_tag [required]
-
-Notes:
-  - source.url can lead to local file (`file:///path/to/local/image.tar`) or remote file (`https://url/to/tar/my_image.tar`)
-  - source.username and source.url are optional
-  - build context is optional and can be either local directory or Git repository
-  - computer must have push access to registry
-  - image is pushed to `[registry_ip]/[image_name]:[image_tag]`
-
-#### Dockerfile - image variants
-This mode builds docker-image from Dockerfile with optional additional build context. Result are one or more image variants.
-Image variants are built by overloading the base container image, which is injected dynamically at build-time by the
-image builder, both for single and multi-stage builds. No modifications to the Dockerfile are required.
-
-File inputs.yaml for this mode should follow this template:
-    
-    source:
-        type: dockerfile [required]
-        url: file:///path/to/Dockerfile [required]
-        username: my_username [optional]
-        password: my_password [optional]
-        build_context: [optional]
-            dir_name: build_context_dir_name [required]
- 
-            # local build context
-            path: /path/to/local/build/context [required with local build context]
-
-            # for Git build context
-            url: https://url/to/git/repo.git [required with Git build context]
-            subdir: path/to/subdir [optional]
-            username: my_username [optional]
-            password: my_password_or_token [optional]
-
-
-    target:
-        images: [required, one or more]
-            - image: my_image_name [required]
-              tag: my_image_tag [required]
-        
-            - image: my_image_name [required]
-              tag: my_image_variant_tag [required]
-              base: my_image_variant_base_image [optional]
-
- 
-Notes:
-- source.url can lead to local file (`file:///path/to/local/image.tar`) or remote file (`https://url/to/tar/my_image.tar`)
-- source.username and source.url are optional
-- build context is optional and can be either local directory or Git repository
-- computer must have push access to registry
-- target image can use default base image (specified in Dockerfile) with `image` and `tag` params
-- target image can use another base image with `image` and `tag` and `base` params
-- all images are pushed to `[registry_ip]/[image]:[tag]`
-
-### Tests
-Tests can be run from [TOSCA](src/image_builder/TOSCA/playbooks) directory with:
-
-    ./test.sh <registry_ip>
+## Converting json to yaml
+Image builder can run as [REST API](#rest-api) with JSON build params or as [TOSCA template](#docker-image-definition) with YAML build_params.
+Conversion can be done with [json_to_yaml.py](json_to_yaml.py). [Examples](#examples) are in both formats.
 
 ## REST API
 
@@ -206,8 +178,37 @@ REST API can be deployed remotely using [TOSCA template](image-builder-rest-blue
     cp image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.crt image-builder-rest-blueprint/openstack/modules/misc/tls/artifacts/ca.crt
     ```
 ### Sample JSON payloads
-Sample JSON payloads to be used with `/build/` endpoint can be found in [JSON-build-params](JSON-build-params).
+Sample JSON payloads to be used with `/build/` endpoint can be found in [build-params/JSON_(API)](build-params/JSON_(API)).
 
 ### Python client
-Convenianc Python client (Python 3.8) can send json payload and waits for the response (see [client.py](client.py)).
+Convenient Python client (Python 3.8) can send json payload and waits for the response (see [client.py](client.py)).
 
+## docker-image-definition
+docker-image-definition is a TOSCA blueprint, based on tosca_simple_yaml_1_3.
+### Running using xOpera
+Within SODALITE platform, it is executed with [xOpera orchestrator](https://github.com/xlab-si/xopera-opera).
+If using xOpera 0.6.4 via CLI:
+    
+    opera deploy -i inputs.yaml docker_image_definition.yaml
+
+### Running using the image builder CLI
+
+It is also possible to run the image builder in a self-contained container using a CLI convenience wrapper:
+    
+```shell script
+$ image-builder-cli.sh <input.yaml>
+```
+
+#### Building the image builder CLI
+
+By default, the included `image-builder-cli.sh` script will use the `sodaliteh2020/image-builder-cli` image. If
+developing the image builder locally, local versions of the CLI container can be built with the supplied Dockerfile:
+
+```
+$ cd REST_API && docker build -t <your tag> -f Dockerfile-cli .
+```
+
+you will then need to fix up the image name in the `image-builder-cli.sh` script to use your local image.
+
+### build_params for docker-image-definition
+docker-image-definition needs build_params in YAML format, which can be [converted](#converting-json-to-yaml) from json.

@@ -1,0 +1,10 @@
+source:
+  repo:
+    dockerfile: Dockerfile
+    url: https://github.com/adaptant-labs/edgetpu-exporter
+    workdir: .
+  type: git
+target:
+  image_name: adaptant/edgetpu-exporter
+  image_tag: latest
+  registry_ip: localhost:5000

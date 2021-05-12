@@ -1,0 +1,15 @@
+source:
+  repo:
+    dockerfile: Dockerfile
+    url: https://github.com/mihaTrajbaric/generic_repo.git
+    workdir: .
+  type: git
+target:
+  image_tag: latest
+  images:
+  - image: tests/image_variants
+    tag: latest
+  - base: python:3.8-alpine
+    image: tests/image_variants
+    tag: python-3.8
+  registry_ip: localhost:5000

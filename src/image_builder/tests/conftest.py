@@ -4,25 +4,27 @@ import json
 import os
 import shutil
 import uuid
+from contextlib import contextmanager
 from pathlib import Path
-
 
 import docker
 import psutil
 import pytest
-import yaml
 from docker import DockerClient
+from opera.commands.deploy import deploy_service_template as opera_deploy
+from opera.error import OperationError
+from opera.storage import Storage
 
 from image_builder.api.cli import test
 from image_builder.api.openapi.models import BuildParams, Invocation, InvocationState
-from image_builder.api.service.image_builder_service import validate
+from image_builder.api.service.image_builder_service import transform_build_params
 
 tosca_path = (Path(__file__).parent.parent / "TOSCA")
-tests_path = tosca_path / 'playbooks' / 'tests'
+test_build_params = Path(__file__).parent / '02_integration' / 'build_params'
 
 
 def pytest_addoption(parser):
-    parser.addoption("--registry_ip", action="store", help='api url', default='localhost')
+    parser.addoption("--registry_ip", action="store", help='registry url', default='localhost')
 
 
 def find_images(client: DockerClient, substring: str):
@@ -48,29 +50,36 @@ def delete_images(client: DockerClient, substring: str):
         client.images.remove(image=image.id, force=True)
 
 
-def json_to_yaml(json_path: Path, yaml_path: Path, registry_ip: str):
+def json_to_yaml(test_path: Path, registry_ip: str):
     """
     transforms json test to yaml test
     """
-    json_test = json.load(json_path.open('r'))
+    json_test = json.load(test_path.open('r'))
 
-    yaml_test = validate(BuildParams.from_dict(json_test))
+    yaml_test = transform_build_params(BuildParams.from_dict(json_test))
     yaml_test['target']['registry_ip'] = registry_ip
     yaml_test['custom_workdir'] = 'workdir'
 
-    yaml_path.open('w').write(yaml.dump(yaml_test))
+    return yaml_test
 
 
-def run_test(test_name: str):
+def run_test(registry_ip: str, test_name: str):
     """
     Runs yaml test and returns exit_code
     """
-    test_path = tests_path / 'tests-yaml' / f'{test_name}.yaml'
-    script = f"cd {tosca_path}\n" \
-             f"opera deploy --inputs {test_path} docker_image_definition.yaml\n"
-    exit_code = os.system(script)
-    shutil.rmtree((tosca_path / ".opera"), ignore_errors=True)
-    return exit_code
+    test_path = test_build_params / f'{test_name}.json'
+
+    inputs = json_to_yaml(test_path, registry_ip)
+    with cwd(tosca_path):
+        opera_storage = Storage.create('.opera')
+        try:
+            opera_deploy('docker_image_definition.yaml', inputs, opera_storage,
+                         verbose_mode=False, num_workers=1, delete_existing_state=True)
+        except OperationError:
+            return 1
+        finally:
+            shutil.rmtree((tosca_path / ".opera"), ignore_errors=True)
+    return 0
 
 
 def check_image(client: DockerClient, registry_ip: str, test_name: str):
@@ -78,7 +87,7 @@ def check_image(client: DockerClient, registry_ip: str, test_name: str):
     Check if docker image(s) have been created
     """
 
-    image_name_path = tests_path / 'image_names' / (test_name + '.txt')
+    image_name_path = test_build_params / (test_name + '.name')
 
     # read file with image_names
     for line in image_name_path.open('r').readlines():
@@ -98,17 +107,23 @@ def core_test_tools(pytestconfig):
     # move tests to yaml
     registry_ip = pytestconfig.getoption("registry_ip")
 
-    for json_test_path in (tests_path / 'tests-json').glob("*"):
-        yaml_test_path = tests_path / 'tests-yaml' / (str(json_test_path.stem) + '.yaml')
-        json_to_yaml(json_test_path, yaml_test_path, registry_ip)
-
     # run test
     check_docker_image = functools.partial(check_image, client, registry_ip)
-    yield run_test, check_docker_image
+    run_integration_test = functools.partial(run_test, registry_ip)
+    yield run_integration_test, check_docker_image
 
     # cleanup
     delete_images(client, 'tests')
 
+
+@contextmanager
+def cwd(path):
+    old_pwd = os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(old_pwd)
 
 @pytest.fixture()
 def generic_build_params():

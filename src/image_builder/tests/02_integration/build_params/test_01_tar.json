@@ -1,0 +1,6 @@
+{
+  "source_type": "tar",
+  "source_url": "https://github.com/mihaTrajbaric/image-builder-test-files/blob/master/hello-world.tar?raw=true",
+  "target_image_name": "tests/tar",
+  "target_image_tag": "latest"
+}

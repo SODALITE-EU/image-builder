@@ -6,6 +6,7 @@ venv-deploy/
 gen/
 src/image_builder/api/openapi/
 src/.opera-api/
+src/image_builder/api/.opera-api/
 src/coverage.xml
 src/.coverage
 src/results.xml
@@ -15,6 +16,7 @@ image-builder-rest-blueprint/docker-local/library
 image-builder-rest-blueprint/openstack/modules
 image-builder-rest-blueprint/openstack/.opera
 image-builder-rest-blueprint/openstack/library
+image-builder-rest-blueprint/openstack/private
 
 src/image_builder/TOSCA/.opera/
 

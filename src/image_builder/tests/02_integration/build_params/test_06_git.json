@@ -1,0 +1,8 @@
+{
+  "source_type": "git",
+  "source_repo": {
+      "url": "https://github.com/mihaTrajbaric/generic_repo.git"
+    },
+  "target_image_name": "tests/git",
+  "target_image_tag": "latest"
+}
