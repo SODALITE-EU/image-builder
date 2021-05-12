@@ -104,6 +104,7 @@
       git:
         repo: "{{ git_url }}"
         dest: "{{ workdir }}"
+        version: "{{ source.repo.version | default('HEAD') }}"
       vars:
         authentication: "{{ source.repo.password is defined and source.repo.password is not none and source.repo.username is defined and source.repo.username is not none }}"
         url_authentication: "https://{{ source.repo.username | default(omit) }}:{{ source.repo.password | default(omit) }}@{{ source.repo.url[8:] }}"

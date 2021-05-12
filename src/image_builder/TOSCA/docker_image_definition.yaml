@@ -41,6 +41,11 @@ data_types:
         type: string
         description: Url to git repository
         required: true
+      version:
+        type: string
+        description: Version of repository. Could be branch name, tag name or HEAD.
+        required: false
+        default: HEAD
       username:
         type: string
         description: Username for git repository
