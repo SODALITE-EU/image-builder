@@ -58,7 +58,7 @@ Image builder can build image from standalone dockerfile without any build conte
 ```
 
 ### Build context
-Image builder can add arbitrary git repository for build context. It will insert dockerfile into root door of repository.
+Image builder can add arbitrary git repository for build context. It will insert dockerfile into root dir of repository.
 ```json
 {
   "source_type": "dockerfile",
