@@ -17,7 +17,7 @@ from opera.storage import Storage
 
 from image_builder.api.cli import test
 from image_builder.api.openapi.models import BuildParams, Invocation, InvocationState
-from image_builder.api.service.image_builder_service import validate
+from image_builder.api.service.image_builder_service import transform_build_params
 
 tosca_path = (Path(__file__).parent.parent / "TOSCA")
 test_build_params = Path(__file__).parent / '02_integration' / 'build_params'
@@ -56,7 +56,7 @@ def json_to_yaml(test_path: Path, registry_ip: str):
     """
     json_test = json.load(test_path.open('r'))
 
-    yaml_test = validate(BuildParams.from_dict(json_test))
+    yaml_test = transform_build_params(BuildParams.from_dict(json_test))
     yaml_test['target']['registry_ip'] = registry_ip
     yaml_test['custom_workdir'] = 'workdir'
 

@@ -12,7 +12,7 @@ def discover_tests():
 
     """
     build_params = Path(__file__).parent / 'build_params'
-    return [file.name.strip('.json') for file in build_params.glob('*.json')]
+    return [file.name.replace('.json', '') for file in build_params.glob('*.json')]
 
 
 @pytest.mark.parametrize('test_name', discover_tests())
@@ -25,4 +25,3 @@ def test_integration(core_test_tools, test_name):
     assert exit_code == 0
 
     check_docker_image(test_name)
-

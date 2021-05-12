@@ -21,6 +21,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BuildingStarted'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: string
+
   /status/{invocation_id}:
     get:
       summary: check status

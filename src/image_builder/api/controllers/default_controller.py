@@ -4,8 +4,8 @@ import connexion
 
 from image_builder.api.log import get_logger
 from image_builder.api.openapi.models import BuildParams, Invocation, BuildingStarted
-from image_builder.api.openapi.models.invocation import Invocation
 from image_builder.api.service.invocation_service import InvocationService
+from image_builder.api.service.image_builder_service import validate
 
 logger = get_logger(__name__)
 invocation_service = InvocationService()
@@ -32,6 +32,9 @@ def post_build():
     :rtype: Invocation
     """
     build_params = BuildParams.from_dict(connexion.request.get_json())
+    valid, message = validate(build_params)
+    if not valid:
+        return message, 400
 
     logger.debug(json.dumps(build_params.to_dict(), indent=2))
 

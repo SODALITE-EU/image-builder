@@ -15,6 +15,7 @@ image-builder-rest-blueprint/docker-local/library
 image-builder-rest-blueprint/openstack/modules
 image-builder-rest-blueprint/openstack/.opera
 image-builder-rest-blueprint/openstack/library
+image-builder-rest-blueprint/openstack/private
 
 src/image_builder/TOSCA/.opera/
 
