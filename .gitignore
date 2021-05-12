@@ -6,6 +6,7 @@ venv-deploy/
 gen/
 src/image_builder/api/openapi/
 src/.opera-api/
+src/image_builder/api/.opera-api/
 src/coverage.xml
 src/.coverage
 src/results.xml

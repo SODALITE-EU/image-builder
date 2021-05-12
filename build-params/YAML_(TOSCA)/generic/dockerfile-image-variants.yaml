@@ -10,8 +10,7 @@ source:
 target:
   image_tag: latest
   images:
-  - base: null
-    image: image_name_1
+  - image: image_name_1
     tag: image_tag_1
   - base: base_image
     image: image_name_2

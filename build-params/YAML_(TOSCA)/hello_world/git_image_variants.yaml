@@ -7,8 +7,7 @@ source:
 target:
   image_tag: latest
   images:
-  - base: null
-    image: tests/image_variants
+  - image: tests/image_variants
     tag: latest
   - base: python:3.8-alpine
     image: tests/image_variants

@@ -80,9 +80,7 @@ def transform_build_params(data: BuildParams):
         repo = None
 
     try:
-        image_variants = [{'image': element.image, 'tag': element.tag, 'base': element.base or None}
-                          for element in data.target_images]
-        # TODO remove none from image_variants
+        image_variants = [{k: v for k, v in image.to_dict().items() if v is not None} for image in data.target_images]
     except TypeError:
         image_variants = None
 
@@ -119,22 +117,5 @@ def build_image(inv: Invocation):
             return opera_outputs(opera_storage)
 
 
-if __name__ == '__main__':
-    from pathlib import Path
-    import yaml
-    import os
 
-    Settings.registry_ip = 'localhost:5000'
-    json_path = Path(
-        '/home/mihaeltrajbaric/projects/SODALITE/SODALITE-EU-github/image-builder/build-params/JSON_(API)')
-    yaml_path = Path('/home/mihaeltrajbaric/projects/SODALITE/SODALITE-EU-github/image-builder/build-params/YAML_(TOSCA)')
-    json_files = [path for path in json_path.rglob('*') if path.is_file()]
-    for file_path in json_files:
-        print(file_path.relative_to(json_path))
-        build_params = json.load(file_path.open('r'))
-        transformed = transform_build_params(BuildParams.from_dict(build_params))
-        new_path = Path(str(file_path).replace(str(json_path), str(yaml_path)).replace('.json', '.yaml'))
-        if not new_path.parent.exists():
-            os.makedirs(new_path.parent, exist_ok=True)
-        yaml.dump(transformed, new_path.open('w'))
 
