@@ -110,6 +110,37 @@ Docker image can be saved to tar archive with [docker load command](https://docs
 }
 ```
 
+## Image variants
+This mode enables image builder to build more variants of single docker image. Image variants are built by overloading 
+the base container image, which is injected dynamically at build-time by the image builder, both for single and 
+multi-stage builds. No modifications to the Dockerfile are required.
+
+This mode works in combination with any of other modes (dockerfile, git, tar).
+
+Following example will produce two images. `image_variants:latest` will be built with default bas image (specified 
+in Dockerfile), while `image_variants:python-3.8` will be built on top of `python:3.8-alpine`.
+
+```json
+{
+  "source_type": "git",
+  "source_repo": {
+      "url": "https://github.com/mihaTrajbaric/generic_repo.git"
+    },
+  "target_images": [
+    {
+      "image": "image_variants",
+      "tag": "latest"
+    },
+    {
+      "image": "image_variants",
+      "tag": "python-3.8",
+      "base": "python:3.8-alpine"
+    }
+  ]
+}
+
+```
+
 ## Converting json to yaml
 Image builder can run as [REST API](#rest-api) with JSON build params or as [TOSCA template](#docker-image-definition) with YAML build_params.
 Conversion can be done with [json_to_yaml.py](json_to_yaml.py). [Examples](#examples) are in both formats.
