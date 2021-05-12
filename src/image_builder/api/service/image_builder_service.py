@@ -70,36 +70,39 @@ def validate(data: BuildParams):
 
 def transform_build_params(data: BuildParams):
     try:
-        build_context = data.build_context.to_dict()
+        build_context = {k: v for k, v in data.build_context.to_dict().items() if v is not None}
     except AttributeError:
         build_context = None
 
     try:
-        repo = data.source_repo.to_dict()
+        repo = {k: v for k, v in data.source_repo.to_dict().items() if v is not None}
     except AttributeError:
         repo = None
 
     try:
         image_variants = [{'image': element.image, 'tag': element.tag, 'base': element.base or None}
                           for element in data.target_images]
+        # TODO remove none from image_variants
     except TypeError:
         image_variants = None
 
-    return {
-        "source": {
+    source = {
             "type": data.source_type,
             "url": data.source_url,
             "username": data.source_username,
             "password": data.source_password,
             "build_context": build_context,
             "repo": repo
-        },
-        "target": {
+        }
+    target = {
             "registry_ip": Settings.registry_ip,
             "image_name": data.target_image_name,
             "image_tag": data.target_image_tag,
             "images": image_variants,
         }
+    return {
+        "source": {k: v for k, v in source.items() if v is not None},
+        "target": {k: v for k, v in target.items() if v is not None}
     }
 
 
@@ -114,3 +117,24 @@ def build_image(inv: Invocation):
             opera_deploy(service_template, build_params, opera_storage,
                          verbose_mode=False, num_workers=1, delete_existing_state=True)
             return opera_outputs(opera_storage)
+
+
+if __name__ == '__main__':
+    from pathlib import Path
+    import yaml
+    import os
+
+    Settings.registry_ip = 'localhost:5000'
+    json_path = Path(
+        '/home/mihaeltrajbaric/projects/SODALITE/SODALITE-EU-github/image-builder/build-params/JSON_(API)')
+    yaml_path = Path('/home/mihaeltrajbaric/projects/SODALITE/SODALITE-EU-github/image-builder/build-params/YAML_(TOSCA)')
+    json_files = [path for path in json_path.rglob('*') if path.is_file()]
+    for file_path in json_files:
+        print(file_path.relative_to(json_path))
+        build_params = json.load(file_path.open('r'))
+        transformed = transform_build_params(BuildParams.from_dict(build_params))
+        new_path = Path(str(file_path).replace(str(json_path), str(yaml_path)).replace('.json', '.yaml'))
+        if not new_path.parent.exists():
+            os.makedirs(new_path.parent, exist_ok=True)
+        yaml.dump(transformed, new_path.open('w'))
+
