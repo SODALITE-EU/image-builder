@@ -1,11 +1,12 @@
-
 {
-  "source_type": "dockerfile",
-  "source_url": "https://raw.githubusercontent.com/SODALITE-EU/iac-management/master/use-cases/snow-uc/build-images/components/snowwatch-render/Dockerfile",
-  "build_context": {
-      "url": "https://gitlab.com/wds-co/SnowWatch-SODALITE",
-      "username": "my_username",
-      "password": "my_password"
+  "source_type": "git",
+  "source_repo": {
+    "url": "https://gitlab.com/wds-co/SnowWatch-SODALITE.git",
+    "username": "repo_username",
+    "password": "repo_password",
+    "dockerfile": "Snowwatch-Render/Dockerfile",
+    "workdir": "Snowwatch-Render",
+    "version": "docker_images"
   },
   "target_image_name": "snow-snowwatch-render",
   "target_image_tag": "latest"

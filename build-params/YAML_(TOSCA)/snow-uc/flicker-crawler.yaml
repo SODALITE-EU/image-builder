@@ -1,10 +1,12 @@
 source:
-  build_context:
-    password: my_password
-    url: https://gitlab.com/wds-co/SnowWatch-SODALITE
-    username: my_username
-  type: dockerfile
-  url: https://raw.githubusercontent.com/SODALITE-EU/iac-management/master/use-cases/snow-uc/build-images/components/flicker-crawler/Dockerfile
+  repo:
+    dockerfile: FlickerCrawler/Dockerfile
+    password: repo_password
+    url: https://gitlab.com/wds-co/SnowWatch-SODALITE.git
+    username: repo_username
+    version: docker_images
+    workdir: FlickerCrawler
+  type: git
 target:
   image_name: snow-flicker-crawler
   image_tag: latest

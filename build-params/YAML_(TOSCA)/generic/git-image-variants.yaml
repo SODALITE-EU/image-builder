@@ -2,6 +2,7 @@ source:
   repo:
     dockerfile: Dockerfile
     url: https://url/to/git/repo/with/code/and/dockerfile.git
+    version: HEAD
     workdir: .
   type: git
 target:

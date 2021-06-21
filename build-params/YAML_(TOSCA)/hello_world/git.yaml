@@ -2,6 +2,7 @@ source:
   repo:
     dockerfile: Dockerfile
     url: https://github.com/mihaTrajbaric/generic_repo.git
+    version: HEAD
     workdir: .
   type: git
 target:

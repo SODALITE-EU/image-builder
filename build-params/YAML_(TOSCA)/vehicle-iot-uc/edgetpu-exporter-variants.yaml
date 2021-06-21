@@ -2,6 +2,7 @@ source:
   repo:
     dockerfile: Dockerfile
     url: https://github.com/adaptant-labs/edgetpu-exporter
+    version: HEAD
     workdir: .
   type: git
 target:

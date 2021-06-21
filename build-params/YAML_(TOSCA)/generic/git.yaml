@@ -4,6 +4,7 @@ source:
     password: repo_password
     url: https://url/to/repo.git
     username: repo_username
+    version: HEAD
     workdir: .
   type: git
 target:
