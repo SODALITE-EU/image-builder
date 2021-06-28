@@ -1,13 +1,13 @@
 source:
   repo:
-    dockerfile: SnowIndexComputation/Dockerfile
+    dockerfile: Snowwatch-Render/Dockerfile
     password: repo_password
     url: https://gitlab.com/wds-co/SnowWatch-SODALITE.git
     username: repo_username
-    version: docker_images
-    workdir: SnowIndexComputation
+    version: HEAD
+    workdir: .
   type: git
 target:
-  image_name: snow-index-computation
+  image_name: snow-panorama-generation
   image_tag: latest
   registry_ip: localhost:5000

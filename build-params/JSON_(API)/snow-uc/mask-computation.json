@@ -4,10 +4,9 @@
     "url": "https://gitlab.com/wds-co/SnowWatch-SODALITE.git",
     "username": "repo_username",
     "password": "repo_password",
-    "dockerfile": "SnowIndexComputation/Dockerfile",
-    "workdir": "SnowIndexComputation",
-    "version": "docker_images"
+    "dockerfile": "SnowMaskComputation/Dockerfile",
+    "workdir": "."
   },
-  "target_image_name": "snow-index-computation",
+  "target_image_name": "snow-mask-computation",
   "target_image_tag": "latest"
 }

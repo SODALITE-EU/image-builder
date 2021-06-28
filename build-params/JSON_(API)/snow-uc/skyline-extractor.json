@@ -5,8 +5,7 @@
     "username": "repo_username",
     "password": "repo_password",
     "dockerfile": "SkylineExtraction/Dockerfile",
-    "workdir": "SkylineExtraction",
-    "version": "docker_images"
+    "workdir": "."
   },
   "target_image_name": "snow-skyline-extractor",
   "target_image_tag": "latest"

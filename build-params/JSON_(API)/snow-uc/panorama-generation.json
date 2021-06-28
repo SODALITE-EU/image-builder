@@ -4,9 +4,9 @@
     "url": "https://gitlab.com/wds-co/SnowWatch-SODALITE.git",
     "username": "repo_username",
     "password": "repo_password",
-    "dockerfile": "DailyMedianAggregator/Dockerfile",
+    "dockerfile": "Snowwatch-Render/Dockerfile",
     "workdir": "."
   },
-  "target_image_name": "snow-daily-median-aggregator",
+  "target_image_name": "snow-panorama-generation",
   "target_image_tag": "latest"
 }

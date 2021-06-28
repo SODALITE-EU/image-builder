@@ -1,6 +1,6 @@
 source:
   repo:
-    dockerfile: FlickerCrawler/Dockerfile
+    dockerfile: MountainRelevanceClassifier/Dockerfile
     password: repo_password
     url: https://gitlab.com/wds-co/SnowWatch-SODALITE.git
     username: repo_username
@@ -8,6 +8,6 @@ source:
     workdir: .
   type: git
 target:
-  image_name: snow-flicker-crawler
+  image_name: snow-mountain-relevance-classifier
   image_tag: latest
   registry_ip: localhost:5000

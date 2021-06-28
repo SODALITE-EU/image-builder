@@ -5,8 +5,7 @@
     "username": "repo_username",
     "password": "repo_password",
     "dockerfile": "FlickerCrawler/Dockerfile",
-    "workdir": "FlickerCrawler",
-    "version": "docker_images"
+    "workdir": "."
   },
   "target_image_name": "snow-flicker-crawler",
   "target_image_tag": "latest"

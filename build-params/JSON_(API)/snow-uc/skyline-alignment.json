@@ -5,8 +5,7 @@
     "username": "repo_username",
     "password": "repo_password",
     "dockerfile": "SkylineAlignment/Dockerfile",
-    "workdir": "SkylineAlignment",
-    "version": "docker_images"
+    "workdir": "."
   },
   "target_image_name": "snow-skyline-alignment",
   "target_image_tag": "latest"
