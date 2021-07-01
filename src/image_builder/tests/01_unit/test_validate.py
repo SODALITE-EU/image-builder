@@ -3,19 +3,6 @@ from image_builder.api.openapi.models import BuildParams
 
 
 class TestValidate:
-    def test_tar(self):
-        build_params = {
-            "source_type": "tar",
-            "source_url": "https://link/to/my_image.tar",
-            "source_username": "my_optional_username",
-            "source_password": "my_optional_password",
-            "target_image_name": "my_image_name",
-            "target_image_tag": "my_image_tag"
-        }
-        valid, message = validate(BuildParams.from_dict(build_params))
-        assert valid
-        assert message == ''
-
     def test_dockerfile_1(self):
         build_params = {
             "source_type": "dockerfile",

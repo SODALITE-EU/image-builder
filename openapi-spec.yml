@@ -63,13 +63,13 @@ components:
           $ref: '#/components/schemas/SourceType'
         source_url:
           type: string
-          description: Url to source (if source_type == dockerfile or tar)
+          description: Url to source (if source_type == dockerfile)
         source_username:
           type: string
-          description: Username for source (if source_type == dockerfile or tar)
+          description: Username for source (if source_type == dockerfile)
         source_password:
           type: string
-          description: Password for source (if source_type == dockerfile or tar)
+          description: Password for source (if source_type == dockerfile)
         build_context:
           type: object
           description: Optional build context, if source_type == dockerfile
@@ -203,4 +203,3 @@ components:
       enum:
         - dockerfile
         - git
-        - tar

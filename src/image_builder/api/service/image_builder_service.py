@@ -40,10 +40,6 @@ def validate(data: BuildParams):
         minimal = {'source_type', 'source_repo'}
         maximal = {'source_type', 'source_repo'}
 
-    elif data.source_type == SourceType.TAR:
-        minimal = {'source_type', 'source_url'}
-        maximal = {'source_type', 'source_url', 'source_username', 'source_password'}
-
     elif data.source_type == SourceType.DOCKERFILE:
         minimal = {'source_type', 'source_url'}
         maximal = {'source_type', 'source_url', 'source_username', 'source_password', 'build_context'}
