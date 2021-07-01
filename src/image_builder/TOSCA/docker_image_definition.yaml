@@ -138,7 +138,7 @@ data_types:
 
 node_types:
   my.nodes.image.builder:
-    derived_from: tosca.nodes.Compute
+    derived_from: tosca.nodes.SoftwareComponent
     properties:
       source:
         type: mytypes.Source
