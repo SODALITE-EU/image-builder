@@ -122,21 +122,25 @@
       set_fact:
         default_base_image: "{{ base_image_data.stdout }}"
 
-    # Build and push image variants
-    - name: Build image variants and push them
+    # TODO add platform variables
+    # Build image variants
+    - name: Build images
+      ansible.builtin.shell:
+        chdir: "{{ build_workdir }}"
+        cmd: "docker buildx build --file {{ dockerfile_path }} -t \"{{ item.image }}:{{ item.tag }}\" --build-arg {{ item.base | default(default_base_image, true) }} --platform \"linux/amd64\" --load ."
+      loop: "{{ target.images }}"
+
+    # Push image variants
+    - name: Push images
       docker_image:
-        source: build
-        build:
-          path: "{{ build_workdir }}"
-          dockerfile: "{{ dockerfile_path }}"
-          args:
-            BASE_IMAGE: "{{ item.base | default(default_base_image, true) }}"
-          pull: yes
         name: "{{ item.image }}"
-        force_source: yes
-        repository: "{{ target.registry_ip }}/{{ item.image }}:{{ item.tag }}"
+        source: local
+        repository: "{{ target.registry_ip }}/{{ item.image }}"
+        tag: "{{ item.tag }}"
         push: yes
-      loop: "{{ target.images | default([], True) }}"
+      loop: "{{ target.images }}"
+
+    # TODO clean images?
 
     - name: Clean workdir
       file:
