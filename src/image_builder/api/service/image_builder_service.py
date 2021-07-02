@@ -7,7 +7,7 @@ from opera.commands.outputs import outputs as opera_outputs
 from opera.storage import Storage
 
 from image_builder.api.log import get_logger
-from image_builder.api.openapi.models import Invocation, BuildParams, SourceType
+from image_builder.api.openapi.models import Invocation, BuildParams
 from image_builder.api.settings import Settings
 from image_builder.api.util import image_builder_util
 
@@ -18,86 +18,42 @@ def validate(data: BuildParams):
     """
     Makes sure a valid combination of params have been provided.
     """
-    message = ''
-    params = {
-        "source_type": bool(data.source_type),
-        "build_context": bool(data.build_context),
-        "source_password": bool(data.source_password),
-        "source_repo": bool(data.source_repo),
-        "source_url": bool(data.source_url),
-        "source_username": bool(data.source_username),
-        "target_image_name": bool(data.target_image_name),
-        "target_image_tag": bool(data.target_image_name),
-        "target_images": bool(data.target_images)
-    }
-    dest_params_all = {'target_image_name', 'target_image_tag', 'target_images'}
-    dest_params = {key for key, value in params.items() if value and key in dest_params_all}
-    dest_option_1 = {'target_images'}
-    dest_option_2 = {'target_image_name', 'target_image_tag'}
-    source_params = {key for key, value in params.items() if value} - dest_params
+    git_repo = bool(data.source.git_repo)
+    dockerfile = bool(data.source.dockerfile)
+    build_context = bool(data.source.build_context)
+    git_valid = git_repo and not dockerfile and not build_context
+    dockerfile_valid = dockerfile and not git_repo
 
-    if data.source_type == SourceType.GIT:
-        minimal = {'source_type', 'source_repo'}
-        maximal = {'source_type', 'source_repo'}
+    if not (git_valid or dockerfile_valid):
+        return False, "Only one of build sources (git_repo, dockerfile) can be used.\n" \
+                      "git_context can only be used in combination with dockerfile"
 
-    elif data.source_type == SourceType.DOCKERFILE:
-        minimal = {'source_type', 'source_url'}
-        maximal = {'source_type', 'source_url', 'source_username', 'source_password', 'build_context'}
-    else:
-        return False
-
-    source_valid = minimal <= source_params <= maximal
-    if not source_valid:
-        message += f"Required source properties: {list(minimal)}, " \
-                   f"allowed source properties: {list(maximal)}, " \
-                   f"got {list(source_params)}\n"
-
-    dest_valid = dest_params == dest_option_1 or dest_params == dest_option_2
-    if not dest_valid:
-        message += f"Destination must be described with either {list(dest_option_1)} or {list(dest_option_2)}, " \
-                   f"got {list(dest_params)}"
-
-    valid = source_valid and dest_valid
-    if not valid:
-        message = f"Missing / redundant properties for source_type=='{data.source_type}'.\n" + message
-
-    return source_valid and dest_valid, message
+    return True, ""
 
 
 def transform_build_params(data: BuildParams):
-    try:
-        build_context = {k: v for k, v in data.build_context.to_dict().items() if v is not None}
-    except AttributeError:
-        build_context = None
+    build_params = data.to_dict()
+    build_params['target']['registry_ip'] = Settings.registry_ip
 
-    try:
-        repo = {k: v for k, v in data.source_repo.to_dict().items() if v is not None}
-    except AttributeError:
-        repo = None
+    def remove_none_dict(_dict: dict):
+        dict_keys = list(_dict.keys())
+        for key in dict_keys:
+            value = _dict[key]
+            if isinstance(value, dict):
+                remove_none_dict(value)
+            elif isinstance(value, list):
+                remove_none_list(value)
+            elif _dict[key] is None:
+                del _dict[key]
 
-    try:
-        image_variants = [{k: v for k, v in image.to_dict().items() if v is not None} for image in data.target_images]
-    except TypeError:
-        image_variants = None
+    def remove_none_list(_list: list):
+        _list = [item for item in _list if item is not None]
+        for item in _list:
+            if isinstance(item, dict):
+                remove_none_dict(item)
 
-    source = {
-            "type": data.source_type,
-            "url": data.source_url,
-            "username": data.source_username,
-            "password": data.source_password,
-            "build_context": build_context,
-            "repo": repo
-        }
-    target = {
-            "registry_ip": Settings.registry_ip,
-            "image_name": data.target_image_name,
-            "image_tag": data.target_image_tag,
-            "images": image_variants,
-        }
-    return {
-        "source": {k: v for k, v in source.items() if v is not None},
-        "target": {k: v for k, v in target.items() if v is not None}
-    }
+    remove_none_dict(build_params)
+    return build_params
 
 
 def build_image(inv: Invocation):
@@ -111,7 +67,3 @@ def build_image(inv: Invocation):
             opera_deploy(service_template, build_params, opera_storage,
                          verbose_mode=False, num_workers=1, delete_existing_state=True)
             return opera_outputs(opera_storage)
-
-
-
-

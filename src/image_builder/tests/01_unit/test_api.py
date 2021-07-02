@@ -6,10 +6,19 @@ from assertpy import assert_that
 
 class TestBuild:
     build_data = {
-        "source_type": "dockerfile",
-        "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile",
-        "target_image_name": "tests/no_context",
-        "target_image_tag": "latest"
+        "source": {
+            "git_repo": {
+                "url": "https://gitlab.com/wds-co/SnowWatch-SODALITE.git"
+            }
+        },
+        "target": {
+            "images": [
+                {
+                    "image": "xopera-rest-api",
+                    "tag": "latest"
+                }
+            ]
+        }
     }
 
     def test_success(self, mocker, generic_invocation, generic_build_params, client):
@@ -31,6 +40,5 @@ class TestStatus:
         resp = client.get(f"/status/{job_id}")
         assert resp.status_code == 200
         mock_invoke.assert_called_with(str(job_id))
-        assert_that(resp.json).contains_only(* [k for k in generic_invocation.to_dict().keys() if
-                                                generic_invocation.to_dict()[k] is not None])
-
+        assert_that(resp.json).contains_only(*[k for k in generic_invocation.to_dict().keys() if
+                                               generic_invocation.to_dict()[k] is not None])

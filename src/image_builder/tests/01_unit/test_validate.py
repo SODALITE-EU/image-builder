@@ -5,17 +5,27 @@ from image_builder.api.openapi.models import BuildParams
 class TestValidate:
     def test_dockerfile_1(self):
         build_params = {
-            "source_type": "dockerfile",
-            "source_url": "https://link/to/Dockerfile",
-            "source_username": "my_optional_username",
-            "source_password": "my_optional_password",
-            "build_context": {
-                "url": "https://url/to/git/repo/with/build_context.git",
-                "username": "my_username",
-                "password": "my_password_or_token"
+            "source": {
+                "dockerfile": {
+                    "url": "http://url/to/file",
+                    "username": "user",
+                    "password": "pass"
+                },
+                "build_context": {
+                    "url": "https://github.com/mihaTrajbaric/image-builder-test-files",
+                    "username": "user",
+                    "password": "pass",
+                    "subdir": "no_context"
+                }
             },
-            "target_image_name": "my_image_name",
-            "target_image_tag": "my_image_tag"
+            "target": {
+                "images": [
+                    {
+                        "image": "xopera-rest-api",
+                        "tag": "latest"
+                    }
+                ]
+            }
         }
         valid, message = validate(BuildParams.from_dict(build_params))
         assert valid
@@ -23,10 +33,21 @@ class TestValidate:
 
     def test_dockerfile_2(self):
         build_params = {
-            "source_type": "dockerfile",
-            "source_url": "https://link/to/Dockerfile",
-            "target_image_name": "my_image_name",
-            "target_image_tag": "my_image_tag"
+            "source": {
+                "dockerfile": {
+                    "url": "http://url/to/file",
+                    "username": "miha",
+                    "password": "pass"
+                }
+            },
+            "target": {
+                "images": [
+                    {
+                        "image": "xopera-rest-api",
+                        "tag": "latest"
+                    }
+                ]
+            }
         }
         valid, message = validate(BuildParams.from_dict(build_params))
         assert valid
@@ -34,16 +55,23 @@ class TestValidate:
 
     def test_git(self):
         build_params = {
-            "source_type": "git",
-            "source_repo": {
-                "url": "https://url/to/repo.git",
-                "username": "repo_username",
-                "password": "repo_password",
-                "dockerfile": "path/to/Dockerfile",
-                "workdir": "."
+            "source": {
+                "git_repo": {
+                    "url": "https://gitlab.com/wds-co/SnowWatch-SODALITE.git",
+                    "username": "repo_username",
+                    "password": "repo_password",
+                    "dockerfile": "MountainRelevanceClassifier/Dockerfile",
+                    "workdir": "."
+                }
             },
-            "target_image_name": "my_image_name",
-            "target_image_tag": "my_image_tag"
+            "target": {
+                "images": [
+                    {
+                        "image": "xopera-rest-api",
+                        "tag": "latest"
+                    }
+                ]
+            }
         }
         valid, message = validate(BuildParams.from_dict(build_params))
         assert valid
@@ -51,37 +79,39 @@ class TestValidate:
 
     def test_fail(self):
         build_params = {
-            "source_type": "git",
-            "build_context": {
-                "url": "build_context_url",
-                "username": "build_context_username",
-                "password": "build_context_password",
-                "subdir": "build_context_workdir"
-            },
-            "source_password": "source_password",
-            "source_repo": {
-                "url": "repo_url",
-                "username": "repo_username",
-                "password": "repo_password",
-                "workdir": "docker_workdir",
-                "dockerfile": "git_dockerfile"
-            },
-            "source_url": "source_url",
-            "source_username": "source_username",
-            "target_image_name": "target_image_name",
-            "target_image_tag": "latest",
-            "target_images": [
-                {
-                    "base": "base",
-                    "image": "image",
-                    "tag": "tag"
+            "source": {
+                "git_repo": {
+                    "url": "string",
+                    "version": "HEAD",
+                    "username": "string",
+                    "password": "string",
+                    "workdir": ".",
+                    "dockerfile": "Dockerfile"
                 },
-                {
-                    "base": "base",
-                    "image": "image",
-                    "tag": "tag"
+                "dockerfile": {
+                    "url": "string",
+                    "username": "string",
+                    "password": "string"
+                },
+                "build_context": {
+                    "url": "string",
+                    "username": "string",
+                    "password": "string",
+                    "subdir": "string"
                 }
-            ]
+            },
+            "target": {
+                "images": [
+                    {
+                        "image": "image-builder",
+                        "tag": "latest",
+                        "base": "python:3.8.8"
+                    }
+                ],
+                "platforms": [
+                    "linux/amd64"
+                ]
+            }
         }
         valid, message = validate(BuildParams.from_dict(build_params))
         assert not valid

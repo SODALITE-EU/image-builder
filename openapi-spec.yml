@@ -56,46 +56,56 @@ components:
   schemas:
     BuildParams:
       required:
-      - source_type
+        - source
+        - target
       type: object
+      description: Parameters for building docker images
       properties:
-        source_type:
-          $ref: '#/components/schemas/SourceType'
-        source_url:
-          type: string
-          description: Url to source (if source_type == dockerfile)
-        source_username:
-          type: string
-          description: Username for source (if source_type == dockerfile)
-        source_password:
-          type: string
-          description: Password for source (if source_type == dockerfile)
-        build_context:
+        source:
+          description: Source of docker image
           type: object
-          description: Optional build context, if source_type == dockerfile
-          allOf:
-          - $ref: '#/components/schemas/GitBuildContext'
-        source_repo:
+          properties:
+            git_repo:
+              type: object
+              description: Definition of git repository with code and Dockerfile
+              allOf:
+                - $ref: '#/components/schemas/GitRepo'
+            dockerfile:
+              type: object
+              description: Definition of dockerfile
+              allOf:
+                - $ref: '#/components/schemas/Dockerfile'
+            build_context:
+              type: object
+              description: Optional context. Could be used together with dockerfile.
+              allOf:
+                - $ref: '#/components/schemas/BuildContext'
+        target:
+          description: Target for image-building process
           type: object
-          description: Git repository with dockerile and app code (if source_type == git)
           allOf:
-          - $ref: '#/components/schemas/GitRepo'
-        target_image_name:
+            - $ref: '#/components/schemas/Target'
+    Dockerfile:
+      required:
+        - url
+      type: object
+      description:
+      properties:
+        url:
           type: string
-          description: desired docker image name
-        target_image_tag:
+          description: Url to dockerfile
+        username:
           type: string
-          description: desired docker image tag
-          default: latest
-        target_images:
-          type: array
-          description: List of image variants to build
-          items:
-            $ref: '#/components/schemas/ImageVariantContext'
+          description: Username for dockerfile
+        password:
+          type: string
+          description: Password for dockerfile
+
     GitRepo:
       required:
         - url
       type: object
+      description: Repository with code and dockerfile
       properties:
         url:
           type: string
@@ -118,7 +128,7 @@ components:
           type: string
           description: Path to dockerfile inside repository
           default: Dockerfile
-    GitBuildContext:
+    BuildContext:
       required:
       - url
       type: object
@@ -135,7 +145,24 @@ components:
         subdir:
           type: string
           description: Path to subdirectory within parent where build will be run
-    ImageVariantContext:
+    Target:
+      required:
+        - images
+      type: object
+      properties:
+        images:
+          type: array
+          description: List of target images and tags
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/DockerImage'
+        platforms:
+          type: array
+          description: List of platforms to build for
+          default: [ 'linux/amd64' ]
+          items:
+            $ref: '#/components/schemas/Platforms'
+    DockerImage:
       required:
       - image
       - tag
@@ -144,12 +171,26 @@ components:
         image:
           type: string
           description: Desired docker image name
+          example: image-builder
         tag:
           type: string
           description: Desired docker image tag
+          example: latest
         base:
           type: string
           description: Desired base image to build on
+          example: python:3.8.8
+    Platforms:
+      type: string
+      enum:
+        - linux/amd64
+        - linux/386
+        - linux/arm64
+        - linux/riscv64
+        - linux/ppc64le
+        - linux/s390x
+        - linux/arm/v7
+        - linux/arm/v6
     BuildingStarted:
       description: Object with invocation_id
       type: object
@@ -198,8 +239,3 @@ components:
         - in_progress
         - success
         - failed
-    SourceType:
-      type: string
-      enum:
-        - dockerfile
-        - git

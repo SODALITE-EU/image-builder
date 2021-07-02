@@ -125,13 +125,23 @@ def cwd(path):
     finally:
         os.chdir(old_pwd)
 
+
 @pytest.fixture()
 def generic_build_params():
     return BuildParams.from_dict({
-        "source_type": "dockerfile",
-        "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile",
-        "target_image_name": "tests/no_context",
-        "target_image_tag": "latest"
+        "source": {
+            "git_repo": {
+                "url": "https://gitlab.com/wds-co/SnowWatch-SODALITE.git"
+            }
+        },
+        "target": {
+            "images": [
+                {
+                    "image": "xopera-rest-api",
+                    "tag": "latest"
+                }
+            ]
+        }
     })
 
 
@@ -141,10 +151,19 @@ def generic_invocation():
     inv = Invocation()
     inv.invocation_id = uuid.uuid4()
     inv.build_params = BuildParams.from_dict({
-        "source_type": "dockerfile",
-        "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile",
-        "target_image_name": "tests/no_context",
-        "target_image_tag": "latest"
+        "source": {
+            "git_repo": {
+                "url": "https://gitlab.com/wds-co/SnowWatch-SODALITE.git"
+            }
+        },
+        "target": {
+            "images": [
+                {
+                    "image": "xopera-rest-api",
+                    "tag": "latest"
+                }
+            ]
+        }
     })
     inv.state = InvocationState.PENDING
     inv.timestamp_submission = now.isoformat()
