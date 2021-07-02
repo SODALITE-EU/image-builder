@@ -1,9 +1,18 @@
 {
-  "source_type": "dockerfile",
-  "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/python_build_context/Dockerfile",
-  "build_context": {
-      "url": "https://github.com/mihaTrajbaric/generic_docker_build_context.git"
+  "source": {
+    "dockerfile": {
+      "url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/python_build_context/Dockerfile"
     },
-  "target_image_name": "tests/build-context",
-  "target_image_tag": "latest"
+    "build_context": {
+      "url": "https://github.com/mihaTrajbaric/generic_docker_build_context.git"
+    }
+  },
+  "target": {
+    "images": [
+      {
+        "image": "tests/build-context",
+        "tag": "latest"
+      }
+    ]
+  }
 }

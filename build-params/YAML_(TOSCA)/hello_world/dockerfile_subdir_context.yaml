@@ -2,9 +2,10 @@ source:
   build_context:
     subdir: no_context
     url: https://github.com/mihaTrajbaric/image-builder-test-files
-  type: dockerfile
-  url: https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile
+  dockerfile:
+    url: https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile
 target:
-  image_name: tests/subdir_context
-  image_tag: latest
+  images:
+  - image: tests/subdir_context
+    tag: latest
   registry_ip: localhost:5000

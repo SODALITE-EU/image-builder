@@ -5,33 +5,39 @@ data_types:
     derived_from: map
     description: Docker image source. Could be either tar archive or Dockerfile with optional build context
     properties:
-      type:
-        type: string
-        description: One of (dockerfile, tar, git)
+      dockerfile:
+        type: mytypes.dockerfile
+        required: false
+        default: ""
+        description: Dockerfile with build instructions
+      build_context:
+        type: mytypes.BuildContext
+        required: false
+        default: ""
+        description: Optional build context. Could be used with dockerfile only
+      git_repo:
+        type: mytypes.GitRepo
+        required: false
+        default: ""
+        description: Git repository with dockerile and app code
+
+  mytypes.dockerfile:
+    derived_from: map
+    properties:
       url:
         type: string
-        description: Url of dockerfile or tarfile.
+        description: Url of dockerfile
         required: True
       username:
         type: string
         required: false
         default: ""
-        description: Username for authentication (if needed) for dockerfile or tarfile
+        description: Username for authentication (if needed)
       password:
         type: string
         required: false
         default: ""
-        description: Password for authentication (if needed) for dockerfile or tarfile
-      build_context:
-        type: mytypes.BuildContext
-        required: false
-        default: ""
-        description: Optional build context, if type == dockerfile
-      repo:
-        type: mytypes.GitRepo
-        required: false
-        default: ""
-        description: Git repository with dockerile and app code (if type == git)
+        description: Password for authentication (if needed)
 
   mytypes.GitRepo:
     derived_from: map
@@ -98,16 +104,18 @@ data_types:
         default: ""
         description: Password for authentication (if needed) for git repo
 
-  mytypes.ImageVariant:
+  mytypes.DockerImage:
     derived_from: map
-    description: Image variant to build.
+    description: Docker image to build
     properties:
       image:
         type: string
         description: Image name
+        required: true
       tag:
         type: string
         description: Image tag
+        required: true
       base:
         type: string
         description: Base image to inject
@@ -120,21 +128,19 @@ data_types:
         type: string
         required: true
         description: ip of docker registry
-      image_name:
-        type: string
-        required: true
-        description: Target docker image name.
-      image_tag:
-        type: string
-        required: true
-        description: Target docker image tag.
       images:
         type: list
-        default: []
-        required: false
+        required: true
         description: List of image variants to build.
         entry_schema:
-          type: mytypes.ImageVariant
+          type: mytypes.DockerImage
+      platforms:
+        type: list
+        required: true
+        description: List of platforms to build for.
+        entry_schema:
+          type: string
+
 
 node_types:
   my.nodes.image.builder:

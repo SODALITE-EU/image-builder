@@ -1,10 +1,19 @@
 {
-  "source_type": "dockerfile",
-  "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile",
-  "build_context": {
+  "source": {
+    "dockerfile": {
+      "url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile"
+    },
+    "build_context": {
       "subdir": "no_context",
       "url": "https://github.com/mihaTrajbaric/image-builder-test-files"
-    },
-  "target_image_name": "tests/subdir_context",
-  "target_image_tag": "latest"
+    }
+  },
+  "target": {
+    "images": [
+      {
+        "image": "tests/subdir_context",
+        "tag": "latest"
+      }
+    ]
+  }
 }

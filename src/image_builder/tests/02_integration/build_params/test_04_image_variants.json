@@ -1,9 +1,11 @@
 {
-  "source_type": "git",
-  "source_repo": {
+  "source": {
+    "git_repo": {
       "url": "https://github.com/mihaTrajbaric/generic_repo.git"
-    },
-  "target_images": [
+    }
+  },
+  "target": {
+    "images": [
     {
       "image": "tests/image_variants",
       "tag": "latest"
@@ -14,4 +16,5 @@
       "base": "python:3.8-alpine"
     }
   ]
+  }
 }

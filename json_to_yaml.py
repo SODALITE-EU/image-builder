@@ -32,5 +32,5 @@ def json_to_yaml(json_dir: Path, yaml_dir: Path, registry_ip: str = 'localhost:5
 
 if __name__ == '__main__':
     json_path = Path(__file__).parent / 'build-params' /'JSON_(API)'
-    yaml_path = Path(__file__).parent / 'build-params2' / 'YAML_(TOSCA)'
+    yaml_path = Path(__file__).parent / 'build-params' / 'YAML_(TOSCA)'
     json_to_yaml(json_path, yaml_path)

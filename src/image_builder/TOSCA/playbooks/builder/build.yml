@@ -20,31 +20,22 @@
       block:
         - name: Check which values are defined
           set_fact:
-            source_url_defined: "{{ source.url is defined and source.url is not none | bool }}"
-            source_authentication: "{{ source.username is defined and source.username is not none and source.password is defined and source.password is not none and source.url[:8] == 'https://' | bool }}"
-            target_registry_defined: "{{ target.registry_ip is defined and target.registry_ip is not none | bool }}"
-            target_image_defined: "{{ target.image_name is defined and target.image_name is not none and target.image_tag is defined and target.image_tag is not none | bool }}"
-            target_images_defined: "{{ target.images is defined and target.images is not none | bool }}"
+            dockerfile_defined: "{{ source.dockerfile is defined and source.dockerfile is not none | bool }}"
+            git_repo_defined: "{{ source.git_repo is defined and source.git_repo is not none | bool }}"
             build_context_defined: "{{ source.build_context is defined and source.build_context is not none | bool }}"
-            git_repo_defined: "{{ source.repo is defined and source.repo is not none | bool }}"
+            target_registry_defined: "{{ target.registry_ip is defined and target.registry_ip is not none | bool }}"
+            target_images_defined: "{{ target.images is defined and target.images is not none | bool }}"
 
         - name: Determine current image building mode
           set_fact:
-            dockerfile_mode: "{{ source.type == 'dockerfile' }}"
-            git_mode: "{{ source.type == 'git' and  git_repo_defined | bool }}"
-
-        - name: Determine target mode
-          set_fact:
-            single_image_mode: "{{ target_image_defined and not target_images_defined and (dockerfile_mode or git_mode) | bool }}"
-            image_variants_mode: "{{ target_images_defined and not target_image_defined and (dockerfile_mode or git_mode) | bool }}"
-
+            dockerfile_mode: "{{ dockerfile_defined | bool }}"
+            git_mode: "{{ git_repo_defined | bool }}"
 
         - name: Validate input data
           assert:
             that:
               - target_registry_defined
               - dockerfile_mode or git_mode
-              - single_image_mode or image_variants_mode
 
     - name: Create workdir
       file:
@@ -53,28 +44,9 @@
 
     # mode: dockerfile
 
-    - name: set url
-      set_fact:
-        url: "{{ source.url }}"
-      when: source_url_defined
-
-    - name: Authenticate url
-      set_fact:
-        url: "https://{{ source.username }}:{{ source.password }}@{{ source.url[8:] }}"
-      when: source_url_defined and source_authentication
-
-
     - name: set empty build_context
       set_fact:
         build_context: "{{ source.build_context | default([], true) }}"
-
-    - name: Add local build context for Dockerfile
-      copy:
-        src: "{{ path }}"
-        dest: "{{ workdir }}"
-      vars:
-        path: "{{ build_context.path if build_context.path[-1] == '/' else build_context.path+'/' }}"
-      when: dockerfile_mode and build_context.path is defined
 
     - name: Add build context for Dockerfile from git
       git:
@@ -88,8 +60,12 @@
 
     - name: Download Dockerfile
       get_url:
-        url: "{{ source.url }}"
+        url: "{{ dockerfile_url }}"
         dest: "{{ workdir }}/Dockerfile"
+      vars:
+        authentication: "{{ source.dockerfile.password is defined and source.dockerfile.password is not none and source.dockerfile.username is defined and source.dockerfile.username is not none }}"
+        url_authentication: "https://{{ source.dockerfile.username | default(omit) }}:{{ source.dockerfile.password | default(omit) }}@{{ source.dockerfile.url[8:] }}"
+        dockerfile_url: "{{ url_authentication if authentication == true else source.dockerfile.url }}"
       when: dockerfile_mode
 
     - name: Set Git repo clone path with subdir definition
@@ -102,22 +78,22 @@
       git:
         repo: "{{ git_url }}"
         dest: "{{ workdir }}"
-        version: "{{ source.repo.version | default('HEAD') }}"
+        version: "{{ source.git_repo.version | default('HEAD') }}"
       vars:
-        authentication: "{{ source.repo.password is defined and source.repo.password is not none and source.repo.username is defined and source.repo.username is not none }}"
-        url_authentication: "https://{{ source.repo.username | default(omit) }}:{{ source.repo.password | default(omit) }}@{{ source.repo.url[8:] }}"
-        git_url: "{{ url_authentication if authentication == true else source.repo.url }}"
+        authentication: "{{ source.git_repo.password is defined and source.git_repo.password is not none and source.git_repo.username is defined and source.git_repo.username is not none }}"
+        url_authentication: "https://{{ source.git_repo.username | default(omit) }}:{{ source.git_repo.password | default(omit) }}@{{ source.git_repo.url[8:] }}"
+        git_url: "{{ url_authentication if authentication == true else source.git_repo.url }}"
       when: git_mode
 
     - name: Set build workdir
       set_fact:
-        build_workdir: "{{ workdir }}/{{ source.repo.workdir }}"
-      when: source.repo.workdir is defined and source.repo.workdir is not none
+        build_workdir: "{{ workdir }}/{{ source.git_repo.workdir }}"
+      when: source.git_repo.workdir is defined and source.git_repo.workdir is not none
 
     - name: Set dockerfile path
       set_fact:
-        dockerfile_path: "{{ workdir }}/{{ source.repo.dockerfile }}"
-      when: source.repo.dockerfile is defined and source.repo.dockerfile is not none
+        dockerfile_path: "{{ workdir }}/{{ source.git_repo.dockerfile }}"
+      when: source.git_repo.dockerfile is defined and source.git_repo.dockerfile is not none
 
     # image variants configuration
 
@@ -135,19 +111,16 @@
       args:
         # sed does a better job of this than the replace module, silence warnings about its use.
         warn: false
-      when: image_variants_mode
 
     - name: Extract default base image from Dockerfile
       shell: sed q "{{ dockerfile_path }}" | sed -e 's/^.*=//g'
       register: base_image_data
       args:
         warn: false
-      when: image_variants_mode
 
     - name: Preserving default base image
       set_fact:
         default_base_image: "{{ base_image_data.stdout }}"
-      when: image_variants_mode
 
     # Build and push image variants
     - name: Build image variants and push them
@@ -163,22 +136,7 @@
         force_source: yes
         repository: "{{ target.registry_ip }}/{{ item.image }}:{{ item.tag }}"
         push: yes
-      when: image_variants_mode
       loop: "{{ target.images | default([], True) }}"
-
-    # Build and push a single target image
-    - name: Build image and push it
-      docker_image:
-        source: build
-        build:
-          path: "{{ build_workdir }}"
-          dockerfile: "{{ dockerfile_path }}"
-          pull: yes
-        name: "{{ target.image_name }}"
-        force_source: yes
-        repository: "{{ target.registry_ip }}/{{ target.image_name }}:{{ target.image_tag }}"
-        push: yes
-      when: single_image_mode
 
     - name: Clean workdir
       file:
