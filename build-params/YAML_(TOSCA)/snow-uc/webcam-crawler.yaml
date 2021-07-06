@@ -1,13 +1,13 @@
 source:
-  repo:
+  git_repo:
     dockerfile: WebCamCrawler/Dockerfile
     password: repo_password
     url: https://gitlab.com/wds-co/SnowWatch-SODALITE.git
     username: repo_username
     version: HEAD
     workdir: .
-  type: git
 target:
-  image_name: snow-webcam-crawler
-  image_tag: latest
+  images:
+  - image: snow-webcam-crawler
+    tag: latest
   registry_ip: localhost:5000

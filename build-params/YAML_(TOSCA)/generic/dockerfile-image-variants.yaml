@@ -3,12 +3,11 @@ source:
     password: my_password_or_token
     url: https://url/to/git/repo/with/build_context.git
     username: my_username
-  password: my_optional_password
-  type: dockerfile
-  url: https://link/to/Dockerfile
-  username: my_optional_username
+  dockerfile:
+    password: my_optional_password
+    url: https://link/to/Dockerfile
+    username: my_optional_username
 target:
-  image_tag: latest
   images:
   - image: image_name_1
     tag: image_tag_1

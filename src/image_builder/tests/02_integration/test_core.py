@@ -2,8 +2,7 @@ import pytest
 from pathlib import Path
 
 # New integration tests for ImageBuilder API - ImageBuilder blueprint integration can be added
-# to 'build_params' dir. Every test consists of .json file (build params) and .name file (name of
-# resulting docker image)
+# to 'build_params' dir.
 
 
 def discover_tests():

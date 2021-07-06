@@ -1,17 +1,20 @@
 {
-  "source_type": "git",
-  "source_repo": {
+  "source": {
+    "git_repo": {
       "url": "https://url/to/git/repo/with/code/and/dockerfile.git"
-    },
-  "target_images": [
-    {
-      "image": "image_name_1",
-      "tag": "image_tag_1"
-    },
-    {
-      "image": "image_name_2",
-      "tag": "image_tag_2",
-      "base": "base_image"
     }
-  ]
+  },
+  "target": {
+    "images": [
+      {
+        "image": "image_name_1",
+        "tag": "image_tag_1"
+      },
+      {
+        "image": "image_name_2",
+        "tag": "image_tag_2",
+        "base": "base_image"
+      }
+    ]
+  }
 }

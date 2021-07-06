@@ -1,12 +1,19 @@
 {
-  "source_type": "git",
-  "source_repo": {
-    "url": "https://gitlab.com/wds-co/SnowWatch-SODALITE.git",
-    "username": "repo_username",
-    "password": "repo_password",
-    "dockerfile": "WeatherConditionFilter/Dockerfile",
-    "workdir": "."
+  "source": {
+    "git_repo": {
+      "url": "https://gitlab.com/wds-co/SnowWatch-SODALITE.git",
+      "username": "repo_username",
+      "password": "repo_password",
+      "dockerfile": "WeatherConditionFilter/Dockerfile",
+      "workdir": "."
+    }
   },
-  "target_image_name": "snow-weather-condition-filter",
-  "target_image_tag": "latest"
+  "target": {
+    "images": [
+      {
+        "image": "snow-weather-condition-filter",
+        "tag": "latest"
+      }
+    ]
+  }
 }

@@ -28,8 +28,8 @@
 
         - name: Determine current image building mode
           set_fact:
-            dockerfile_mode: "{{ dockerfile_defined | bool }}"
-            git_mode: "{{ git_repo_defined | bool }}"
+            dockerfile_mode: "{{ dockerfile_defined and not git_repo_defined | bool }}"
+            git_mode: "{{ git_repo_defined and not dockerfile_defined and not build_context_defined | bool }}"
 
         - name: Validate input data
           assert:
@@ -56,7 +56,7 @@
         authentication: "{{ build_context.password is defined and build_context.password is not none and build_context.username is defined and build_context.username is not none }}"
         url_authentication: "https://{{ build_context.username | default(omit) }}:{{ build_context.password | default(omit) }}@{{ build_context.url[8:] }}"
         git_url: "{{ url_authentication if authentication == true else build_context.url }}"
-      when: dockerfile_mode and build_context.url is defined
+      when: dockerfile_mode and build_context_defined
 
     - name: Download Dockerfile
       get_url:
@@ -122,25 +122,17 @@
       set_fact:
         default_base_image: "{{ base_image_data.stdout }}"
 
-    # TODO add platform variables
+    # multi-arch configuration
+    - name: Parse platform list
+      set_fact:
+        target_platforms: "{{ target.platforms | default(['linux/amd64'], true) | join(',') }}"
+
     # Build image variants
     - name: Build images
       ansible.builtin.shell:
         chdir: "{{ build_workdir }}"
-        cmd: "docker buildx build --file {{ dockerfile_path }} -t \"{{ item.image }}:{{ item.tag }}\" --build-arg {{ item.base | default(default_base_image, true) }} --platform \"linux/amd64\" --load ."
+        cmd: "docker buildx build --file {{ dockerfile_path }} -t \"{{ target.registry_ip }}/{{ item.image }}:{{ item.tag }}\" --build-arg {{ item.base | default(default_base_image, true) }} --platform \"{{ target_platforms }}\" --push ."
       loop: "{{ target.images }}"
-
-    # Push image variants
-    - name: Push images
-      docker_image:
-        name: "{{ item.image }}"
-        source: local
-        repository: "{{ target.registry_ip }}/{{ item.image }}"
-        tag: "{{ item.tag }}"
-        push: yes
-      loop: "{{ target.images }}"
-
-    # TODO clean images?
 
     - name: Clean workdir
       file:

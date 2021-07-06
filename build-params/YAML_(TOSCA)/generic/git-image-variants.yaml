@@ -1,12 +1,10 @@
 source:
-  repo:
+  git_repo:
     dockerfile: Dockerfile
     url: https://url/to/git/repo/with/code/and/dockerfile.git
     version: HEAD
     workdir: .
-  type: git
 target:
-  image_tag: latest
   images:
   - image: image_name_1
     tag: image_tag_1

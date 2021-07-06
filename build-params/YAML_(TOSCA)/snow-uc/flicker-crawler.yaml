@@ -1,13 +1,13 @@
 source:
-  repo:
+  git_repo:
     dockerfile: FlickerCrawler/Dockerfile
     password: repo_password
     url: https://gitlab.com/wds-co/SnowWatch-SODALITE.git
     username: repo_username
     version: HEAD
     workdir: .
-  type: git
 target:
-  image_name: snow-flicker-crawler
-  image_tag: latest
+  images:
+  - image: snow-flicker-aggregator
+    tag: latest
   registry_ip: localhost:5000

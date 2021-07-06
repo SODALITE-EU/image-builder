@@ -1,13 +1,22 @@
 {
-  "source_type": "dockerfile",
-  "source_url": "https://link/to/Dockerfile",
-  "source_username": "my_optional_username",
-  "source_password": "my_optional_password",
-  "build_context": {
+  "source": {
+    "dockerfile": {
+      "url": "https://link/to/Dockerfile",
+      "username": "my_optional_username",
+      "password": "my_optional_password"
+    },
+    "build_context": {
       "url": "https://url/to/git/repo/with/build_context.git",
       "username": "my_username",
       "password": "my_password_or_token"
+    }
   },
-  "target_image_name": "my_image_name",
-  "target_image_tag": "my_image_tag"
+  "target": {
+    "images": [
+      {
+        "image": "my_image_name",
+        "tag": "my_image_tag"
+      }
+    ]
+  }
 }
