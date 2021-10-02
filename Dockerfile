@@ -4,7 +4,7 @@ COPY . /build/
 RUN /build/generate.sh
 
 
-FROM python:3.8.8-alpine3.13 as python-builder
+FROM python:3.10.0rc2-alpine3.13 as python-builder
 COPY requirements.txt .
 RUN export BUILD_PREREQS="gcc musl-dev libffi-dev openssl-dev postgresql-dev cargo" \
     && apk add --no-cache $BUILD_PREREQS \
@@ -12,7 +12,7 @@ RUN export BUILD_PREREQS="gcc musl-dev libffi-dev openssl-dev postgresql-dev car
     && pip3 install --user --no-warn-script-location -r requirements.txt
 
 
-FROM python:3.8.8-alpine3.13
+FROM python:3.10.0rc2-alpine3.13
 
 # install system-packages
 RUN export PACKAGES="git bash tar openssh-client libpq" \
