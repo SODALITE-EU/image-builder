@@ -14,7 +14,9 @@ pipeline {
        OS_REGION_NAME = "RegionOne"
        OS_AUTH_PLUGIN = "password"
        ssh_key_name = "jenkins-opera"
-       image_name = "centos7"
+       image_name = "ubuntu"
+       username = "ubuntu"
+       OPERA_SSH_USER = "ubuntu"
        network_name = "orchestrator-network"
        security_groups = "default,sodalite-remote-access,sodalite-rest"
        flavor_name = "m1.medium"
@@ -206,12 +208,12 @@ pipeline {
                       python3 -m venv venv-deploy
                       . venv-deploy/bin/activate
                       python3 -m pip install --upgrade pip
-                      python3 -m pip install opera[openstack]==0.6.4 docker
+                      python3 -m pip install opera[openstack]==0.6.6 docker
                       ansible-galaxy install geerlingguy.pip,2.0.0 --force
                       ansible-galaxy install geerlingguy.docker,3.0.0 --force
                       ansible-galaxy install geerlingguy.repo-epel,3.0.0 --force
                       rm -rf image-builder-rest-blueprint/openstack/modules/
-                      git clone -b 3.4.1 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules
+                      git clone -b 3.5.0 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules
                       rm -rf image-builder-rest-blueprint/openstack/library/
                       cp -r image-builder-rest-blueprint/library/ image-builder-rest-blueprint/openstack/library/
                       cp ${ca_crt_file} image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.crt

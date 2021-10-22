@@ -3,8 +3,8 @@
 ######################
 # Pinned versions
 
-OPERA_VERSION="0.6.2"
-IAC_MODULES_VERSION="3.0.2"
+OPERA_VERSION="0.6.6"
+IAC_MODULES_VERSION="3.5.0"
 
 ########################
 
@@ -53,8 +53,8 @@ OPERA_NOT_INSTALLED=$(if [ -z "$(pip3 show opera 2>/dev/null)" ]; then echo true
 OPERA_WRONG_VERSION=$(if [ "$OPERA_CURRENT_VERSION" != "$OPERA_VERSION" ]; then echo true; else echo false; fi)
 
 # ansible version
-ANSIBLE_VERSION=$(ansible --version 2>/dev/null | head -n 1| awk '{print $2}')
-ANSIBLE_WRONG_VERSION=$(if [[ $ANSIBLE_VERSION == 2.10*  ]] || [[ -z $ANSIBLE_VERSION ]]; then echo false; else echo true; fi)
+ANSIBLE_VERSION=$(ansible --version 2>/dev/null | head -n 1| awk -F'[][]' '{print $2}' | awk '{print $NF}')
+ANSIBLE_WRONG_VERSION=$(if python3 semver_compare.py 2.10.0 "${ANSIBLE_VERSION}"; then echo false; else echo true; fi)
 
 # check python3 and pip3
 PIP_INSTALLED=$(command -v pip3)

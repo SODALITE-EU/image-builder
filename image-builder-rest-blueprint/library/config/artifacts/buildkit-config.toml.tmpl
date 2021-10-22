@@ -1,0 +1,6 @@
+# Certificates also need to be copied to builder
+[registry."{{ registry_ip }}"]
+  ca=["/etc/docker/certs.d/{{ registry_ip }}/ca.crt"]
+  [[registry."{{ registry_ip }}".keypair]]
+    key="/etc/docker/certs.d/{{ registry_ip }}/client.key"
+    cert="/etc/docker/certs.d/{{ registry_ip }}/client.cert"

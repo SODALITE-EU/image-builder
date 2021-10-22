@@ -17,6 +17,8 @@ topology_template:
       type: string
     vm-name:
       type: string
+    username:
+      type: string
     image-name:
       type: string
     openstack-network-name:
@@ -82,7 +84,7 @@ topology_template:
 
 #        ssh_config:
 #          IdentityFile:   { get_input: identity_file }    # doesn't work due to https://github.com/xlab-si/xopera-opera/issues/102
-        username: centos
+        username:         { get_input: username }
       requirements:
         - protected_by: security-rules-sodalite
 
@@ -109,7 +111,6 @@ topology_template:
       requirements:
         - host: sodalite-vm
         - dependency: docker-host
-        - certs: docker-private-registry-certificate
 
     docker-private-registry:
       type: sodalite.nodes.DockerRegistry
@@ -126,6 +127,15 @@ topology_template:
       requirements:
         - host: sodalite-vm
         - dependency: docker-host
+
+    docker-buildx-builder-config:
+      type: sodalite.nodes.BuildxConfig
+      properties:
+        registry_ip: { get_input: docker-private-registry-url }
+      requirements:
+        - host: sodalite-vm
+        - dependency: docker-host
+        - dependency: docker-private-registry-certificate
 
     # image-builder-api
     # https://github.com/SODALITE-EU/image-builder
@@ -162,6 +172,7 @@ topology_template:
         restart_policy: always
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
+          - ~/.docker:/root/.docker
         labels:
           traefik.enable: "true"
           traefik.http.services.api.loadbalancer.server.port: "8080"
@@ -217,7 +228,7 @@ topology_template:
 
       requirements:
         - host: docker-host
-        - registry: docker-public-registry   
-        - network: docker-network           
+        - registry: docker-public-registry
+        - network: docker-network
         - dependency: api
         - dependency: proxy-tls-config
