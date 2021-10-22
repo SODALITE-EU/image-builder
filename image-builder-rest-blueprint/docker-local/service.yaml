@@ -151,7 +151,10 @@ topology_template:
           traefik.http.routers.api-https.rule: "PathPrefix(`/`)"
           traefik.http.routers.api-https.entrypoints: "websecure"
           traefik.http.routers.api-https.tls: "true"
-        env: { get_input: image_builder_env }
+        env:
+          REGISTRY_IP: { get_input: docker-private-registry-url }
+          DEBUG: "false"
+          LOG_LEVEL: debug
       requirements:
         - host: docker-host
         - registry: docker-public-registry

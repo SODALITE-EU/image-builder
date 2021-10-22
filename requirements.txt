@@ -2,10 +2,10 @@
 opera==0.6.6
 
 # docker
-docker==4.4.4
+docker==5.0.3
 
 # openapi
-connexion[swagger-ui] >= 2.7.0
+connexion[swagger-ui] >= 2.9.0
 python-dateutil >= 2.8.1
 tornado==6.1
 
