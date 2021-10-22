@@ -1,0 +1,13 @@
+source:
+  git_repo:
+    dockerfile: SkylineAlignment/Dockerfile
+    password: repo_password
+    url: https://gitlab.com/wds-co/SnowWatch-SODALITE.git
+    username: repo_username
+    version: HEAD
+    workdir: .
+target:
+  images:
+  - image: snow-skyline-alignment
+    tag: latest
+  registry_ip: localhost:5000

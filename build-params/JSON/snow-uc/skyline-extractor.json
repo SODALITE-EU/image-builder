@@ -1,0 +1,19 @@
+{
+  "source": {
+    "git_repo": {
+      "url": "https://gitlab.com/wds-co/SnowWatch-SODALITE.git",
+      "username": "repo_username",
+      "password": "repo_password",
+      "dockerfile": "SkylineExtraction/Dockerfile",
+      "workdir": "."
+    }
+  },
+  "target": {
+    "images": [
+      {
+        "image": "snow-skyline-extractor",
+        "tag": "latest"
+      }
+    ]
+  }
+}

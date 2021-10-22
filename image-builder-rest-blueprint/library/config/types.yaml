@@ -3,6 +3,32 @@ imports:
   - ../../modules/misc/conf/types.yaml
 
 node_types:
+  sodalite.nodes.BuildxConfig:
+    derived_from: tosca.nodes.SoftwareComponent
+    properties:
+      registry_ip:
+        type: string
+        description: IP of the SODALITE docker registry
+        required: true
+    interfaces:
+      Standard:
+        type: tosca.interfaces.node.lifecycle.Standard
+        operations:
+          create:
+            inputs:
+              registry_ip:              { type: string, default: { get_property: [ SELF, registry_ip ] } }
+            implementation:
+              primary: playbooks/configure_multi-arch.yml
+              dependencies:
+                - artifacts/check-qemu-binfmt.sh
+                - artifacts/buildkit-config.toml.tmpl
+          # TODO delete
+#          delete:
+#            inputs:
+#              dir: { type: string, default: { get_property: [ SELF, dir ] } }
+#              filename: { type: string, default: { get_property: [ SELF, filename ] } }
+#            implementation:
+#              primary: ../../modules/misc/conf/playbooks/remove_conf.yml
   sodalite.nodes.Configuration.NginxConfig:
     derived_from: sodalite.nodes.Configuration
     properties:

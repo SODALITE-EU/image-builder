@@ -1,0 +1,17 @@
+{
+  "source": {
+    "git_repo": {
+      "url": "https://github.com/mihaTrajbaric/generic-repo-2.git",
+      "dockerfile": "docker_dir/Dockerfile",
+      "workdir": "code_dir"
+    }
+  },
+  "target": {
+    "images": [
+      {
+        "image": "tests/git-2",
+        "tag": "latest"
+      }
+    ]
+  }
+}

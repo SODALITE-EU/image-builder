@@ -1,0 +1,66 @@
+---
+- hosts: all
+  become_user: root
+  become: yes
+
+  vars:
+    builder_name: multi-arch-builder
+    builder_container_name: buildx_buildkit_multi-arch-builder0
+    builder_home_dir: /home/buildx-builder
+    builder_config_dest: /home/buildx-builder/config.toml
+    platforms: "linux/amd64,linux/arm64,linux/riscv64,linux/ppc64le,linux/s390x,linux/386,linux/arm/v7,linux/arm/v6"
+
+  pre_tasks:
+    - name: update cache
+      package:
+        update_cache: yes
+    - name: Make image builder dir
+      ansible.builtin.file:
+        path: "{{ builder_home_dir }}"
+        state: directory
+
+  tasks:
+    - name: Install and verify qemu
+      block:
+        - name: Install Qemu (Ubuntu only)
+          package:
+            name: qemu-user-static
+            state: present
+        - name: Copy test file to remote
+          ansible.builtin.copy:
+            src: check-qemu-binfmt.sh
+            dest: "{{ builder_home_dir }}/check-qemu-binfmt.sh"
+            mode: +x
+        - name: Test qemu
+          ansible.builtin.shell: "{{ builder_home_dir }}/check-qemu-binfmt.sh"
+
+
+    # TODO shorten commands
+    # TODO test with dependencies copied next to ansible playbook
+    - name: Configure builder
+      block:
+        - name: Remove existing builder instance
+          ansible.builtin.shell: "docker buildx rm"
+        - name: Create configfile for builder instance
+          ansible.builtin.template:
+            src: ./buildkit-config.toml.tmpl
+            dest: "{{ builder_config_dest }}"
+        - name: Configure new builder
+          ansible.builtin.shell: "docker buildx create --config {{ builder_config_dest }} --name {{ builder_name }} --platform {{ platforms }} --use"
+        - name: Create new builder
+          ansible.builtin.shell: docker buildx inspect --bootstrap
+        - name: Make dir inside builder
+          community.docker.docker_container_exec:
+            container: "{{ builder_container_name }}"
+            command: mkdir -p /etc/docker/certs.d
+        - name: Copy registry certificates to builder instance
+          ansible.builtin.shell: "docker cp /etc/docker/certs.d/{{ registry_ip }} {{ builder_container_name }}:/etc/docker/certs.d/"
+
+    - name: Test if everything works
+      block:
+        - name: Download test dockerfile
+          get_url:
+            url: https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile
+            dest: "{{ builder_home_dir }}/Dockerfile"
+        - name: Test multi-arch build
+          ansible.builtin.shell: "docker buildx build --file {{ builder_home_dir }}/Dockerfile -t {{ registry_ip }}/multi-arch:test --platform {{ platforms | replace('linux/riscv64,', '') }}  --push ."

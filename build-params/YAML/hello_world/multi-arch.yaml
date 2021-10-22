@@ -1,0 +1,16 @@
+source:
+  dockerfile:
+    url: https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile
+target:
+  images:
+  - image: mihatrajbaric/test
+    tag: multi-arch
+  platforms:
+  - linux/amd64
+  - linux/386
+  - linux/arm64
+  - linux/ppc64le
+  - linux/s390x
+  - linux/arm/v7
+  - linux/arm/v6
+  registry_ip: 172.17.0.2:5000

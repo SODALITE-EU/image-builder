@@ -1,6 +1,7 @@
 ssh-key-name: key_name
 vm-name: image-builder
-image-name: "centos-7 x86_64"
+image-name: "ubuntu-20.04 x86_64"
+username: ubuntu
 openstack-network-name: xlab
 security-groups: default,sodalite-uc,sodalite-remote-access
 flavor-name: m1.medium
@@ -10,6 +11,4 @@ docker-private-registry-url: registry_ip
 docker-registry-cert-country-name: SI
 docker-registry-cert-organization-name: XLAB
 docker-registry-cert-email-address: some.email@email.com
-image_builder_env:
-    REGISTRY_IP: registry_ip
 

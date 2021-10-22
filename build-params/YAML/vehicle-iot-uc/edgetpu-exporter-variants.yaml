@@ -1,0 +1,14 @@
+source:
+  git_repo:
+    dockerfile: Dockerfile
+    url: https://github.com/adaptant-labs/edgetpu-exporter
+    version: HEAD
+    workdir: .
+target:
+  images:
+  - image: adaptant/edgetpu-exporter
+    tag: latest
+  - base: golang:1.13
+    image: adaptant/edgetpu-exporter
+    tag: go1.13
+  registry_ip: localhost:5000

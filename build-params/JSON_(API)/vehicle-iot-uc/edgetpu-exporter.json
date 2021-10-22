@@ -1,8 +1,0 @@
-{
-  "source_type": "git",
-  "source_repo": {
-      "url": "https://github.com/adaptant-labs/edgetpu-exporter"
-  },
-  "target_image_name": "adaptant/edgetpu-exporter",
-  "target_image_tag": "latest"
-}

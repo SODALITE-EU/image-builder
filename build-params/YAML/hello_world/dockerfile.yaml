@@ -1,0 +1,8 @@
+source:
+  dockerfile:
+    url: https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile
+target:
+  images:
+  - image: tests/no_context
+    tag: latest
+  registry_ip: localhost:5000

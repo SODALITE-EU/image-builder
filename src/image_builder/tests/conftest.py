@@ -87,14 +87,26 @@ def check_image(client: DockerClient, registry_ip: str, test_name: str):
     Check if docker image(s) have been created
     """
 
-    image_name_path = test_build_params / (test_name + '.name')
+    build_params_path = test_build_params / (test_name + '.json')
+    build_params = json.load(build_params_path.open('r'))
 
-    # read file with image_names
-    for line in image_name_path.open('r').readlines():
-        image_name = line.replace('registry_ip', registry_ip).rstrip()
+    platforms = build_params['target'].get('platforms', ['linux/amd64'])
+    images = build_params['target'].get('images')
 
-        # check if docker image exists
-        client.images.get(image_name)
+    for image in images:
+        image_repository = f'{registry_ip}/{image["image"]}'
+        image_tag = f'{image_repository}:{image["tag"]}'
+
+        client.images.pull(repository=image_repository, all_tags=True)
+        registry_data = client.images.get_registry_data(image_repository)
+        image = client.images.get(image_repository)
+
+        if image_tag not in image.tags:
+            raise Exception(f'Tag "{image_tag}" not found in repository "{image_repository}"')
+
+        for platform in platforms:
+            if not registry_data.has_platform(platform):
+                raise Exception(f'Platform "{platform}" not found in repository "{image_repository}"')
 
 
 @pytest.fixture(scope="package")
@@ -125,13 +137,23 @@ def cwd(path):
     finally:
         os.chdir(old_pwd)
 
+
 @pytest.fixture()
 def generic_build_params():
     return BuildParams.from_dict({
-        "source_type": "dockerfile",
-        "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile",
-        "target_image_name": "tests/no_context",
-        "target_image_tag": "latest"
+        "source": {
+            "git_repo": {
+                "url": "https://gitlab.com/wds-co/SnowWatch-SODALITE.git"
+            }
+        },
+        "target": {
+            "images": [
+                {
+                    "image": "xopera-rest-api",
+                    "tag": "latest"
+                }
+            ]
+        }
     })
 
 
@@ -141,10 +163,19 @@ def generic_invocation():
     inv = Invocation()
     inv.invocation_id = uuid.uuid4()
     inv.build_params = BuildParams.from_dict({
-        "source_type": "dockerfile",
-        "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile",
-        "target_image_name": "tests/no_context",
-        "target_image_tag": "latest"
+        "source": {
+            "git_repo": {
+                "url": "https://gitlab.com/wds-co/SnowWatch-SODALITE.git"
+            }
+        },
+        "target": {
+            "images": [
+                {
+                    "image": "xopera-rest-api",
+                    "tag": "latest"
+                }
+            ]
+        }
     })
     inv.state = InvocationState.PENDING
     inv.timestamp_submission = now.isoformat()
@@ -156,7 +187,6 @@ def generic_invocation():
 def client(session_mocker):
     """An application for the tests."""
     os.environ['LOG_LEVEL'] = 'debug'
-    session_mocker.patch('connexion.decorators.security.get_authorization_info', return_value={'scope': ['apiKey']})
     with test().app.test_client() as client:
         yield client
     kill_tree(os.getpid(), including_parent=False)
@@ -172,3 +202,7 @@ def kill_tree(pid, including_parent=True):
 
     if including_parent:
         parent.kill()
+
+
+if __name__ == '__main__':
+    check_image(client=docker.from_env(), registry_ip='10.10.43.193', test_name='test_02_no_context')

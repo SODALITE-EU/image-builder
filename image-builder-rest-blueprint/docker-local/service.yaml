@@ -79,7 +79,6 @@ topology_template:
       requirements:
         - host: sodalite-vm
         - dependency: docker-host
-        - certs: docker-private-registry-certificate
 
     docker-private-registry:
       type: sodalite.nodes.DockerRegistry
@@ -96,6 +95,15 @@ topology_template:
       requirements:
         - host: sodalite-vm
         - dependency: docker-host
+
+    docker-buildx-builder-config:
+      type: sodalite.nodes.BuildxConfig
+      properties:
+        registry_ip: { get_input: docker-private-registry-url }
+      requirements:
+        - host: sodalite-vm
+        - dependency: docker-host
+        - dependency: docker-private-registry-certificate
 
     # image-builder-api
     # https://github.com/SODALITE-EU/image-builder
@@ -132,6 +140,7 @@ topology_template:
         restart_policy: always
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
+          - ~/.docker:/root/.docker
         labels:
           traefik.enable: "true"
           traefik.http.services.api.loadbalancer.server.port: "8080"
@@ -142,7 +151,10 @@ topology_template:
           traefik.http.routers.api-https.rule: "PathPrefix(`/`)"
           traefik.http.routers.api-https.entrypoints: "websecure"
           traefik.http.routers.api-https.tls: "true"
-        env: { get_input: image_builder_env }
+        env:
+          REGISTRY_IP: { get_input: docker-private-registry-url }
+          DEBUG: "false"
+          LOG_LEVEL: debug
       requirements:
         - host: docker-host
         - registry: docker-public-registry

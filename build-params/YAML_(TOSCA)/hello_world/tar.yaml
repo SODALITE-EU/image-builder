@@ -1,7 +1,0 @@
-source:
-  type: tar
-  url: https://github.com/mihaTrajbaric/image-builder-test-files/blob/master/hello-world.tar?raw=true
-target:
-  image_name: tests/tar
-  image_tag: latest
-  registry_ip: localhost:5000

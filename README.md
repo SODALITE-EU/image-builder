@@ -95,21 +95,6 @@ Additional options for dockerfile mode:
 }
 ```
 
-## TAR
-This mode allows image builder to load already built image and push it to docker registry.
-Docker image can be saved to tar archive with [docker load command](https://docs.docker.com/engine/reference/commandline/save/):
-
-    docker save [image-name] > [tar-name].tar
-
-```json
-{
-  "source_type": "tar",
-  "source_url": "https://github.com/mihaTrajbaric/image-builder-test-files/blob/master/hello-world.tar?raw=true",
-  "target_image_name": "image_tar",
-  "target_image_tag": "latest"
-}
-```
-
 ## Image variants
 This mode enables image builder to build more variants of single docker image. Image variants are built by overloading 
 the base container image, which is injected dynamically at build-time by the image builder, both for single and 

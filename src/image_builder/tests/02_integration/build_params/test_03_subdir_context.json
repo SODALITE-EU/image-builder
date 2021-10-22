@@ -1,0 +1,19 @@
+{
+  "source": {
+    "dockerfile": {
+      "url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile"
+    },
+    "build_context": {
+      "subdir": "no_context",
+      "url": "https://github.com/mihaTrajbaric/image-builder-test-files"
+    }
+  },
+  "target": {
+    "images": [
+      {
+        "image": "tests/subdir_context",
+        "tag": "latest"
+      }
+    ]
+  }
+}

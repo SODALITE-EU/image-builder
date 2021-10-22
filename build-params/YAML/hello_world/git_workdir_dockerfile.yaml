@@ -1,0 +1,11 @@
+source:
+  git_repo:
+    dockerfile: docker_dir/Dockerfile
+    url: https://github.com/mihaTrajbaric/generic-repo-2.git
+    version: HEAD
+    workdir: code_dir
+target:
+  images:
+  - image: tests/git-2
+    tag: latest
+  registry_ip: localhost:5000

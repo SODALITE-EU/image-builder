@@ -1,0 +1,19 @@
+{
+  "source": {
+    "git_repo": {
+      "url": "https://gitlab.com/wds-co/SnowWatch-SODALITE.git",
+      "username": "repo_username",
+      "password": "repo_password",
+      "dockerfile": "MountainRelevanceClassifier/Dockerfile",
+      "workdir": "."
+    }
+  },
+  "target": {
+    "images": [
+      {
+        "image": "snow-mountain-relevance-classifier",
+        "tag": "latest"
+      }
+    ]
+  }
+}
