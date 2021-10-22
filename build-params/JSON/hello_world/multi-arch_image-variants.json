@@ -7,7 +7,7 @@
   "target": {
     "images": [
       {
-        "image": "tests/platforms",
+        "image": "tests/image_variants_platforms",
         "tag": "latest",
         "platforms": [
           "linux/amd64",
@@ -17,7 +17,18 @@
           "linux/s390x",
           "linux/arm/v7",
           "linux/arm/v6"
-    ]
+        ]
+      },
+      {
+        "image": "tests/image_variants_platforms",
+        "tag": "python-3.8",
+        "base": "python:3.8-alpine",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64",
+          "linux/arm/v7",
+          "linux/arm/v6"
+        ]
       }
     ]
   }

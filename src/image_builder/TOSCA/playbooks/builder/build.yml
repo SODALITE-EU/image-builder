@@ -122,16 +122,13 @@
       set_fact:
         default_base_image: "{{ base_image_data.stdout }}"
 
-    # multi-arch configuration
-    - name: Parse platform list
-      set_fact:
-        target_platforms: "{{ target.platforms | default(['linux/amd64'], true) | join(',') }}"
-
     # Build image variants
     - name: Build images
       ansible.builtin.shell:
         chdir: "{{ build_workdir }}"
         cmd: "docker buildx build --file {{ dockerfile_path }} -t \"{{ target.registry_ip }}/{{ item.image }}:{{ item.tag }}\" --build-arg {{ item.base | default(default_base_image, true) }} --platform \"{{ target_platforms }}\" --push ."
+      vars:
+        target_platforms: "{{ item.platforms | default(['linux/amd64'], true) | join(',') }}"
       loop: "{{ target.images }}"
 
     - name: Clean workdir

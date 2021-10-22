@@ -156,12 +156,6 @@ components:
           minItems: 1
           items:
             $ref: '#/components/schemas/DockerImage'
-        platforms:
-          type: array
-          description: List of platforms to build for
-          default: [ 'linux/amd64' ]
-          items:
-            $ref: '#/components/schemas/Platforms'
     DockerImage:
       required:
       - image
@@ -180,6 +174,12 @@ components:
           type: string
           description: Desired base image to build on
           example: python:3.8.8
+        platforms:
+          type: array
+          description: List of platforms to build for
+          default: [ 'linux/amd64' ]
+          items:
+            $ref: '#/components/schemas/Platforms'
     Platforms:
       type: string
       enum:
