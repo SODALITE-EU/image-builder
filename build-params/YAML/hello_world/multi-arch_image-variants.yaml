@@ -3,7 +3,7 @@ source:
     url: https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile
 target:
   images:
-  - image: tests/platforms
+  - image: tests/image_variants_platforms
     platforms:
     - linux/amd64
     - linux/386
@@ -13,4 +13,12 @@ target:
     - linux/arm/v7
     - linux/arm/v6
     tag: latest
-  registry_ip: localhost:5000
+  - base: python:3.8-alpine
+    image: tests/image_variants_platforms
+    platforms:
+    - linux/amd64
+    - linux/arm64
+    - linux/arm/v7
+    - linux/arm/v6
+    tag: python-3.8
+  registry_ip: 10.10.43.193

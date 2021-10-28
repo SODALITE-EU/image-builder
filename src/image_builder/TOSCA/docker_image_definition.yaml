@@ -119,6 +119,12 @@ data_types:
       base:
         type: string
         description: Base image to inject
+      platforms:
+        type: list
+        required: true
+        description: List of platforms to build for.
+        entry_schema:
+          type: string
 
   mytypes.Target:
     derived_from: map
@@ -134,12 +140,6 @@ data_types:
         description: List of image variants to build.
         entry_schema:
           type: mytypes.DockerImage
-      platforms:
-        type: list
-        required: true
-        description: List of platforms to build for.
-        entry_schema:
-          type: string
 
 
 node_types:
