@@ -272,7 +272,7 @@ REST API's configuration can be set by setting following environmental variables
     - REGISTRY_IP: IP of docker registry. Default: localhost
     
 ### Local run
-To run locally, use [docker compose](docker-compose.yml) or [local TOSCA template](image-builder-rest-blueprint/docker-local/service.yaml) with compliant orchestrator. It was tested with [opera==0.6.4](https://pypi.org/project/opera/0.6.4/)
+To run locally, use [docker compose](docker-compose.yml) or [local TOSCA template](image-builder-rest-blueprint/docker-local/service.yaml) with compliant orchestrator. It was tested with [opera==0.6.6](https://pypi.org/project/opera/0.6.6/). Note that if you deploy image-builder with docker-compose, [multi-arch prerequisites](https://docs.docker.com/buildx/working-with-buildx/#build-multi-platform-images) need to be installed and configured.
 #### Script installation
 In order to proceed with local docker installation use `deploy_local.sh` script (for Ubuntu Linux distribution) that checks and installs all components required for deployment (pip, xOpera, Ansible Roles, etc), provides means for setting up input variables necessary for deployment and starts the deployment itself. 
 
