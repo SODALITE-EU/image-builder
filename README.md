@@ -6,19 +6,26 @@ Image builder contains components needed to build images within the SODALITE pla
 # How to use image-builder
 
 ## Examples
-Every example is in two forms: [json](build-params/JSON_(API)) (for REST API) and [yaml](build-params/YAML_(TOSCA)) (for image-builder TOSCA template).
+Every example is in two forms: [json](build-params/JSON) (for REST API) and [yaml](build-params/YAML) (for image-builder TOSCA template).
 
 ## GIT
 The simplest option for building docker images is to provide git repository with app code and dockerfile.
 
 ```json
 {
-  "source_type": "git",
-  "source_repo": {
-      "url": "https://github.com/mihaTrajbaric/generic_repo"
-    },
-  "target_image_name": "image_git",
-  "target_image_tag": "latest"
+  "source": {
+    "git_repo": {
+      "url": "https://github.com/mihaTrajbaric/generic_repo.git"
+    }
+  },
+  "target": {
+    "images": [
+      {
+        "image": "image_git",
+        "tag": "latest"
+      }
+    ]
+  }
 }
 ```
 Image builder will assume repository contains Dockerfile in repo's root dir of default branch and will use it for workdir during building process.
@@ -32,17 +39,24 @@ Additional options for git mode include:
 - workdir (default: . )
 ```json
 {
-  "source_type": "git",
-  "source_repo": {
+  "source": {
+    "git_repo": {
       "url": "https://github.com/mihaTrajbaric/generic-repo-2",
+      "version": "HEAD",
       "username": "git_username",
       "password": "git_password_or_token",
       "dockerfile": "docker_dir/Dockerfile",
-      "workdir": "code_dir",
-      "version": "HEAD"
-    },
-  "target_image_name": "image_git",
-  "target_image_tag": "additional_options"
+      "workdir": "code_dir"
+    }
+  },
+  "target": {
+    "images": [
+      {
+        "image": "image_git",
+        "tag": "additional_options"
+      }
+    ]
+  }
 }
 ```
 ## Dockerfile
@@ -50,10 +64,19 @@ Additional options for git mode include:
 Image builder can build image from standalone dockerfile without any build context.
 ```json
 {
-  "source_type": "dockerfile",
-  "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile",
-  "target_image_name": "image_dockerfile",
-  "target_image_tag": "no_context"
+  "source": {
+    "dockerfile": {
+      "url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile"
+    }
+  },
+  "target": {
+    "images": [
+      {
+        "image": "dockerfile_no_context",
+        "tag": "latest"
+      }
+    ]
+  }
 }
 ```
 
@@ -61,13 +84,22 @@ Image builder can build image from standalone dockerfile without any build conte
 Image builder can add arbitrary git repository for build context. It will insert dockerfile into root dir of repository.
 ```json
 {
-  "source_type": "dockerfile",
-  "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/python_build_context/Dockerfile",
-  "build_context": {
-      "url": "https://github.com/mihaTrajbaric/generic_docker_build_context.git"
+  "source": {
+    "dockerfile": {
+      "url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/python_build_context/Dockerfile"
     },
-  "target_image_name": "image_dockerfile",
-  "target_image_tag": "build_context"
+    "build_context": {
+      "url": "https://github.com/mihaTrajbaric/generic_docker_build_context.git"
+    }
+  },
+  "target": {
+    "images": [
+      {
+        "image": "dockerfile_build-context",
+        "tag": "latest"
+      }
+    ]
+  }
 }
 ```
 
@@ -80,19 +112,29 @@ Additional options for dockerfile mode:
 
 ```json
 {
-  "source_type": "dockerfile",
-  "source_url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile",
-  "source_username": "source_username",
-  "source_password": "source_password_or_token",
-  "build_context": {
+  "source": {
+    "dockerfile": {
+      "url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile"
+      "username": "username",
+      "password": "password_or_token"
+    },
+    "build_context": {
+      "subdir": "no_context",
       "url": "https://github.com/mihaTrajbaric/image-builder-test-files",
       "username": "git_username",
-      "password": "git_password",
-      "subdir": "no_context"
-    },
-  "target_image_name": "image_dockerfile",
-  "target_image_tag": "additional_options"
+      "password": "git_password"
+    }
+  },
+  "target": {
+    "images": [
+      {
+        "image": "tests/subdir_context",
+        "tag": "latest"
+      }
+    ]
+  }
 }
+
 ```
 
 ## Image variants
@@ -106,26 +148,94 @@ Following example will produce two images. `image_variants:latest` will be built
 in Dockerfile), while `image_variants:python-3.8` will be built on top of `python:3.8-alpine`.
 
 ```json
+
 {
-  "source_type": "git",
-  "source_repo": {
-      "url": "https://github.com/mihaTrajbaric/generic_repo.git"
-    },
-  "target_images": [
-    {
-      "image": "image_variants",
-      "tag": "latest"
-    },
-    {
-      "image": "image_variants",
-      "tag": "python-3.8",
-      "base": "python:3.8-alpine"
+  "source": {
+    "dockerfile": {
+      "url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile"
     }
-  ]
+  },
+  "target": {
+    "images": [
+      {
+        "image": "image_variants",
+        "tag": "latest"
+      },
+      {
+        "image": "image_variants",
+        "tag": "python-3.8",
+        "base": "python:3.8-alpine"
+      }
+    ]
+  }
 }
 
 ```
+## Multi-arch build
+Image builder is capable of building images for multiple architectures leveraging [docker buildx](https://docs.docker.com/buildx/working-with-buildx/#build-multi-platform-images).
 
+Following example will produce multiple variants of single image.
+
+```json
+{
+  "source": {
+    "dockerfile": {
+      "url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile"
+    }
+  },
+  "target": {
+    "images": [
+      {
+        "image": "multi-arch",
+        "tag": "latest",
+        "platforms": [
+          "linux/amd64",
+          "linux/386",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x",
+          "linux/arm/v7",
+          "linux/arm/v6"
+        ]
+      }
+    ]
+  }
+}
+```
+
+Platforms are defined on per-image basis, so every image variant can target different set of platforms:
+```json
+{
+  "source": {
+    "git_repo": {
+      "url": "https://github.com/mihaTrajbaric/generic_repo.git"
+    }
+  },
+  "target": {
+    "images": [
+    {
+      "image": "multi-arch",
+      "tag": "latest",
+      "platforms": [
+        "linux/s390x",
+        "linux/arm/v7",
+        "linux/arm/v6"
+      ]
+    },
+    {
+      "image": "multi-arch",
+      "tag": "python-3.8",
+      "base": "python:3.8-alpine",
+      "platforms": [
+        "linux/amd64",
+        "linux/386",
+        "linux/arm64"
+      ]
+    }
+  ]
+  }
+}
+``` 
 ## Converting json to yaml
 Image builder can run as [REST API](#rest-api) with JSON build params or as [TOSCA template](#docker-image-definition) with YAML build_params.
 Conversion can be done with [json_to_yaml.py](json_to_yaml.py). [Examples](#examples) are in both formats.
@@ -154,7 +264,7 @@ The locally deployed registry can then be accessed at `localhost:5000`. More inf
 securing an image registry is available [here](https://docs.docker.com/registry/deploying/).
 
 If the repository uses certificate-based client-server authentication, signed certificates must be installed in `/etc/docker/certs.d`.
-See the [docker docs](https://docs.docker.com/engine/security/certificates/) for more infoformation.
+See the [docker docs](https://docs.docker.com/engine/security/certificates/) for more information.
 
 ### Config
 REST API's configuration can be set by setting following environmental variables:
@@ -171,15 +281,15 @@ REST API can be deployed remotely using [TOSCA template](image-builder-rest-blue
 #### Steps before deploy
 1.  Install pip packages:
     
-    `python3 -m pip install opera[openstack]==0.6.4 docker`
+    `python3 -m pip install opera[openstack]==0.6.6 docker`
 
 2.  Install ansible-playbooks:
 
     `ansible-galaxy install -r image-builder-rest-blueprint/requirements.yml --force`
 
-3.  Clone [SODALITE iac-modules (Release 3.4.1)](https://github.com/SODALITE-EU/iac-modules/releases/tag/3.4.1):
+3.  Clone [SODALITE iac-modules (Release 3.4.1)](https://github.com/SODALITE-EU/iac-modules/releases/tag/3.5.0):
     
-    `git clone -b 3.4.1 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules`
+    `git clone -b 3.5.0 https://github.com/SODALITE-EU/iac-modules.git image-builder-rest-blueprint/openstack/modules`
 
 4.  Copy image-builder TOSCA library
     
@@ -194,7 +304,7 @@ REST API can be deployed remotely using [TOSCA template](image-builder-rest-blue
     cp image-builder-rest-blueprint/openstack/modules/docker/artifacts/ca.crt image-builder-rest-blueprint/openstack/modules/misc/tls/artifacts/ca.crt
     ```
 ### Sample JSON payloads
-Sample JSON payloads to be used with `/build/` endpoint can be found in [build-params/JSON_(API)](build-params/JSON_(API)).
+Sample JSON payloads to be used with `/build/` endpoint can be found in [build-params/JSON_(API)](build-params/JSON).
 
 ### Python client
 Convenient Python client (Python 3.8) can send json payload and waits for the response (see [client.py](client.py)).
@@ -203,7 +313,7 @@ Convenient Python client (Python 3.8) can send json payload and waits for the re
 docker-image-definition is a TOSCA blueprint, based on tosca_simple_yaml_1_3.
 ### Running using xOpera
 Within SODALITE platform, it is executed with [xOpera orchestrator](https://github.com/xlab-si/xopera-opera).
-If using xOpera 0.6.4 via CLI:
+If using xOpera 0.6.6 via CLI:
     
     opera deploy -i inputs.yaml docker_image_definition.yaml
 
