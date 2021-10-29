@@ -21,6 +21,7 @@ node_types:
               primary: playbooks/configure_multi-arch.yml
               dependencies:
                 - artifacts/check-qemu-binfmt.sh
+                - artifacts/reregister-qemu-binfmt
                 - artifacts/buildkit-config.toml.tmpl
           # TODO delete
 #          delete:
