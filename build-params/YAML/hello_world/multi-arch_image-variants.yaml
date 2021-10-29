@@ -1,6 +1,9 @@
 source:
-  dockerfile:
-    url: https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile
+  git_repo:
+    dockerfile: Dockerfile
+    url: https://github.com/mihaTrajbaric/generic_repo.git
+    version: HEAD
+    workdir: .
 target:
   images:
   - image: tests/image_variants_platforms
@@ -21,4 +24,4 @@ target:
     - linux/arm/v7
     - linux/arm/v6
     tag: python-3.8
-  registry_ip: 10.10.43.193
+  registry_ip: localhost:5000
