@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: SODALITE Image Builder REST API
   description: RESTful tool for building docker images
-  version: 1.0.0
+  version: 2.0.0
 paths:
   /build/:
     post:
