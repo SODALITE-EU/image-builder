@@ -46,11 +46,8 @@ topology_template:
       default: ""
     image_builder_env:
       type: map
-    ssh_config:
-      type: map
-      default: {}
-#    identity_file:
-#      type: string
+    identity_file:
+      type: string
 
   node_templates:
 
@@ -80,10 +77,8 @@ topology_template:
         network:          { get_input: openstack-network-name }
         security_groups:  { get_input: security-groups }
         flavor:           { get_input: flavor-name }
-        ssh_config:       { get_input: ssh_config }
-
-#        ssh_config:
-#          IdentityFile:   { get_input: identity_file }    # doesn't work due to https://github.com/xlab-si/xopera-opera/issues/102
+        ssh_config:
+          IdentityFile:   { get_input: identity_file }
         username:         { get_input: username }
       requirements:
         - protected_by: security-rules-sodalite
@@ -183,11 +178,10 @@ topology_template:
           traefik.http.routers.api-https.rule: "PathPrefix(`/`)"
           traefik.http.routers.api-https.entrypoints: "websecure"
           traefik.http.routers.api-https.tls: "true"
-        env:
-          REGISTRY_IP: { get_input: docker-private-registry-url }
+        env: { get_input: image_builder_env }
       requirements:
         - host: docker-host
-        - registry: docker-public-registry
+        - registry: docker-private-registry
         - network: docker-network
 
     proxy:

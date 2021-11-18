@@ -7,6 +7,9 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
+      AUTH_API_KEY: test
+      DEBUG: "true"
+      LOG_LEVEL: debug
       REGISTRY_IP: [ registry ip here ]
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
