@@ -1,4 +1,5 @@
 import datetime
+import connexion.decorators.security
 import functools
 import json
 import os
@@ -187,6 +188,7 @@ def generic_invocation():
 def client(session_mocker):
     """An application for the tests."""
     os.environ['LOG_LEVEL'] = 'debug'
+    session_mocker.patch('connexion.decorators.security.get_authorization_info', return_value={'scope': ['apiKey']})
     with test().app.test_client() as client:
         yield client
     kill_tree(os.getpid(), including_parent=False)

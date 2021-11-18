@@ -155,6 +155,7 @@ topology_template:
           REGISTRY_IP: { get_input: docker-private-registry-url }
           DEBUG: "false"
           LOG_LEVEL: debug
+          AUTH_API_KEY: test
       requirements:
         - host: docker-host
         - registry: docker-public-registry

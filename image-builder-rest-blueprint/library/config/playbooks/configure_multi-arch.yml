@@ -27,10 +27,10 @@
             name: qemu-user-static
             state: present
         - name: Copy registration file to remote
-            ansible.builtin.copy:
-              src: reregister-qemu-binfmt.sh
-              dest: "{{ builder_home_dir }}/reregister-qemu-binfmt.sh"
-              mode: +x
+          ansible.builtin.copy:
+            src: reregister-qemu-binfmt.sh
+            dest: "{{ builder_home_dir }}/reregister-qemu-binfmt.sh"
+            mode: +x
         - name: Reregister QEMU with binfmt
           ansible.builtin.shell: "{{ builder_home_dir }}/reregister-qemu-binfmt.sh"
         - name: Copy test file to remote

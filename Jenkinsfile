@@ -23,6 +23,15 @@ pipeline {
        ca_crt_file = credentials('xopera-ca-crt')
        ca_key_file = credentials('xopera-ca-key')
 
+       // OIDC secrets
+       oidc_endpoint = credentials('oidc-endpoint')
+       oidc_secret = credentials('oidc-secret')
+       auth_api_key = credentials('auth-api-key')
+
+       // XOPERA SETTINGS
+       image_builder_debug = "false"
+       image_builder_log_level = "debug"
+
        // CI-CD vars
        // When triggered from git tag, $BRANCH_NAME is actually tag_name
        TAG_SEM_VER_COMPLIANT = """${sh(
