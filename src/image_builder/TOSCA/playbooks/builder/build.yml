@@ -23,7 +23,7 @@
             dockerfile_defined: "{{ source.dockerfile is defined and source.dockerfile is not none | bool }}"
             git_repo_defined: "{{ source.git_repo is defined and source.git_repo is not none | bool }}"
             build_context_defined: "{{ source.build_context is defined and source.build_context is not none | bool }}"
-            target_registry_defined: "{{ target.registry_ip is defined and target.registry_ip is not none | bool }}"
+            target_registry_defined: "{{ target.registry is defined and target.registry is not none | bool }}"
             target_images_defined: "{{ target.images is defined and target.images is not none | bool }}"
 
         - name: Determine current image building mode
@@ -122,14 +122,28 @@
       set_fact:
         default_base_image: "{{ base_image_data.stdout }}"
 
+    - set_fact:
+        registry_server: "{{ target.registry.url if 'docker.io' not in target.registry.url else '' }}"
+
+    - name: Login to Registry
+      ansible.builtin.shell:
+        cmd: "echo '{{ target.registry.password }}' | img login -u {{ target.registry.username }}  {{ registry_server }} --password-stdin"
+      when: target.registry.username is defined
+
     # Build image variants
-    - name: Build images
+    - name: Build and push images
       ansible.builtin.shell:
         chdir: "{{ build_workdir }}"
-        cmd: "docker buildx build --file {{ dockerfile_path }} -t \"{{ target.registry_ip }}/{{ item.image }}:{{ item.tag }}\" --build-arg {{ item.base | default(default_base_image, true) }} --platform \"{{ target_platforms }}\" --push ."
+        cmd: "img build --file {{ dockerfile_path }} -t {{ image_tag }} --build-arg BASE_IMAGE={{ item.base | default(default_base_image, true) }} --platform \"{{ target_platforms }}\" . && img push {{ image_tag }} && img rm {{ image_tag }}"
       vars:
+        image_tag: "{{ target.registry.url }}/{{ item.image }}:{{ item.tag }}"
         target_platforms: "{{ item.platforms | default(['linux/amd64'], true) | join(',') }}"
       loop: "{{ target.images }}"
+
+    - name: Logout from registry
+      ansible.builtin.shell:
+        cmd: "img logout {{ registry_server }}"
+      when: target.registry.username is defined
 
     - name: Clean workdir
       file:

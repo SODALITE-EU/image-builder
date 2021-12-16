@@ -130,16 +130,35 @@ data_types:
     derived_from: map
     description: Destination for built image.
     properties:
-      registry_ip:
-        type: string
+      registry:
+        type: mytypes.TargetRegistry
         required: true
-        description: ip of docker registry
+        description: Target Registry where images will be pushed.
       images:
         type: list
         required: true
         description: List of image variants to build.
         entry_schema:
           type: mytypes.DockerImage
+  mytypes.TargetRegistry:
+    derived_from: map
+    description: Target OCI Image Registry where images will be pushed.
+    properties:
+      url:
+        type: string
+        required: true
+        description: Url to registry server. Can be IP or CNAME.
+      username:
+        type: string
+        required: false
+        default: ""
+        description: Username to login into Image Registry server.
+      password:
+        type: string
+        required: false
+        default: ""
+        description: Password to login into Image Registry server.
+
 
 
 node_types:

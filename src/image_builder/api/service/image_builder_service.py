@@ -33,7 +33,11 @@ def validate(data: BuildParams):
 
 def transform_build_params(data: BuildParams):
     build_params = data.to_dict()
-    build_params['target']['registry_ip'] = Settings.registry_ip
+    if not build_params['target']['registry']:
+        logger.debug(f'Changing registry_ip to {Settings.registry_ip}')
+        build_params['target']['registry'] = dict(url=Settings.registry_ip)
+    else:
+        logger.debug(f"Registry_ip={build_params['target']['registry']['url']}")
 
     def remove_none_dict(_dict: dict):
         dict_keys = list(_dict.keys())

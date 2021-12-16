@@ -6,14 +6,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    privileged: true
     environment:
       AUTH_API_KEY: test
       DEBUG: "true"
       LOG_LEVEL: debug
       REGISTRY_IP: [ registry ip here ]
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "~/.docker:/root/.docker"
     labels:
       - "traefik.enable=true"
       - "traefik.http.services.api.loadbalancer.server.port=8080"
@@ -37,7 +35,7 @@ services:
       - api
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+#      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - "8080:80"
       # don't use this in production scenarios!

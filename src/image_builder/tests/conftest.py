@@ -58,7 +58,7 @@ def json_to_yaml(test_path: Path, registry_ip: str):
     json_test = json.load(test_path.open('r'))
 
     yaml_test = transform_build_params(BuildParams.from_dict(json_test))
-    yaml_test['target']['registry_ip'] = registry_ip
+    yaml_test['target']['registry']['url'] = registry_ip
     yaml_test['custom_workdir'] = 'workdir'
 
     return yaml_test
