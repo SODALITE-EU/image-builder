@@ -131,38 +131,36 @@ pipeline {
                     """
             }
         }
-        stage('Push image-builder-api to sodalite-private-registry') {
-            // Push during staging and production
+        stage('Push image-builder-api to DockerHub for staging') {
             when {
                 allOf {
                     expression{tag "*"}
                     expression{
-                        TAG_STAGING == 'true' || TAG_PRODUCTION == 'true'
+                        TAG_STAGING == 'true'
                     }
                 }
             }
             steps {
                 withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
                     sh  """#!/bin/bash
-                            ./make_docker.sh push image-builder-api staging
+                            ./make_docker.sh push image-builder-api sodaliteh2020 staging
                         """
                 }
             }
         }
-        stage('Push image-builder-cli to sodalite-private-registry') {
-            // Push during staging and production
+        stage('Push image-builder-cli to DockerHub for staging') {
             when {
                 allOf {
                     expression{tag "*"}
                     expression{
-                        TAG_STAGING == 'true' || TAG_PRODUCTION == 'true'
+                        TAG_STAGING == 'true'
                     }
                 }
             }
             steps {
                 withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
                     sh  """#!/bin/bash
-                            ./make_docker.sh push image-builder-cli staging
+                            ./make_docker.sh push image-builder-cli sodaliteh2020 staging
                         """
                 }
             }
@@ -180,7 +178,7 @@ pipeline {
             steps {
                 withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
                     sh  """#!/bin/bash
-                            ./make_docker.sh push image-builder-api production
+                            ./make_docker.sh push image-builder-api sodaliteh2020 production
                         """
                 }
             }
@@ -198,7 +196,7 @@ pipeline {
             steps {
                 withDockerRegistry(credentialsId: 'jenkins-sodalite.docker_token', url: '') {
                     sh  """#!/bin/bash
-                            ./make_docker.sh push image-builder-cli production
+                            ./make_docker.sh push image-builder-cli sodaliteh2020 production
                         """
                 }
             }
