@@ -166,6 +166,7 @@ components:
     Target:
       required:
         - images
+        - registry
       type: object
       properties:
         images:
@@ -183,8 +184,6 @@ components:
       type: object
       required:
         - url
-        - username
-        - password
       properties:
         url:
           type: string

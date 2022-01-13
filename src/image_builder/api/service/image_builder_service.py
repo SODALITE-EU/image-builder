@@ -1,6 +1,7 @@
 import tempfile
 from distutils import dir_util
 import json
+from pathlib import PurePath
 
 from opera.commands.deploy import deploy_service_template as opera_deploy
 from opera.commands.outputs import outputs as opera_outputs
@@ -33,11 +34,11 @@ def validate(data: BuildParams):
 
 def transform_build_params(data: BuildParams):
     build_params = data.to_dict()
-    if not build_params['target']['registry']:
-        logger.debug(f'Changing registry_ip to {Settings.registry_ip}')
-        build_params['target']['registry'] = dict(url=Settings.registry_ip)
-    else:
-        logger.debug(f"Registry_ip={build_params['target']['registry']['url']}")
+    # if not build_params['target']['registry']:
+    #     logger.debug(f'Changing registry_ip to {Settings.registry_ip}')
+    #     build_params['target']['registry'] = dict(url=Settings.registry_ip)
+    # else:
+    #     logger.debug(f"Registry_ip={build_params['target']['registry']['url']}")
 
     def remove_none_dict(_dict: dict):
         dict_keys = list(_dict.keys())
@@ -65,7 +66,7 @@ def build_image(inv: Invocation):
         dir_util.copy_tree(Settings.TOSCA_path, workdir)
         with image_builder_util.cwd(workdir):
             opera_storage = Storage.create(".opera")
-            service_template = "docker_image_definition.yaml"
+            service_template = PurePath(workdir) / "docker_image_definition.yaml"
             build_params = transform_build_params(inv.build_params)
             logger.info(json.dumps(build_params))
             opera_deploy(service_template, build_params, opera_storage,

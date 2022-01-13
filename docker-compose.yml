@@ -6,12 +6,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    privileged: true
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
     environment:
       AUTH_API_KEY: test
       DEBUG: "true"
       LOG_LEVEL: debug
-      REGISTRY_IP: [ registry ip here ]
     labels:
       - "traefik.enable=true"
       - "traefik.http.services.api.loadbalancer.server.port=8080"

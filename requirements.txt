@@ -1,5 +1,5 @@
 # xopera-opera
-opera==0.6.6
+opera==0.6.8
 
 # docker
 docker==5.0.3
