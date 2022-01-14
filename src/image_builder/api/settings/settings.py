@@ -11,7 +11,9 @@ class Settings:
     implementation_dir = Path(__file__).absolute().parent.parent
     TOSCA_path = implementation_dir.parent / "TOSCA"
 
-    registry_ip = None
+    # PostgreSQL config
+    sql_config = None
+    invocation_table = 'invocation'
 
     # Authorization and Authentication config
     oidc_introspection_endpoint_uri = None
@@ -22,19 +24,26 @@ class Settings:
 
     @staticmethod
     def load_settings():
-        Settings.registry_ip = os.getenv("REGISTRY_IP", "localhost")
-
         Settings.oidc_introspection_endpoint_uri = os.getenv("OIDC_INTROSPECTION_ENDPOINT", "")
         Settings.oidc_client_id = os.getenv("OIDC_CLIENT_ID", "sodalite-ide")
         Settings.oidc_client_secret = os.getenv("OIDC_CLIENT_SECRET", "")
         Settings.apiKey = os.getenv("AUTH_API_KEY", "")
 
+        Settings.sql_config = {
+            'host': os.getenv('IMAGEBUILDER_DATABASE_URL', 'localhost'),
+            'port': int(os.getenv("IMAGEBUILDER_DATABASE_PORT", "5432")),
+            'database': os.getenv("IMAGEBUILDER_DATABASE_DB", 'image-builder'),
+            'user': os.getenv("IMAGEBUILDER_DATABASE_USER", 'postgres'),
+            'password': os.getenv("IMAGEBUILDER_DATABASE_PASSWORD", 'password'),
+            'connect_timeout': int(os.getenv("IMAGEBUILDER_DATABASE_TIMEOUT", '3'))
+        }
+
         logger.debug(json.dumps({
-            "registry_ip": Settings.registry_ip,
             "oicd_config": {
                 "introspection_endpoint": Settings.oidc_introspection_endpoint_uri,
                 "client_id": Settings.oidc_client_id,
                 "client_secret": Settings.oidc_client_secret,
             },
             "auth_api_key": Settings.apiKey,
+            "sql_config": Settings.sql_config,
         }, indent=2))

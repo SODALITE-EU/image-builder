@@ -14,7 +14,9 @@ from opera.storage import Storage
 from image_builder.api.log import get_logger
 from image_builder.api.openapi.models import Invocation, InvocationState, BuildParams
 from image_builder.api.service import image_builder_service
+from image_builder.api.service.sqldb_service import PostgreSQL
 from image_builder.api.util import image_builder_util
+
 
 logger = get_logger(__name__)
 
@@ -102,29 +104,9 @@ class InvocationService:
 
     @classmethod
     def load_invocation(cls, job_id: uuid) -> Optional[Invocation]:
-        # TODO database
-        # try:
-        #     inv = SQL_database.get_deployment_status(deployment_id)
-        #     # if inv.state == InvocationState.IN_PROGRESS:
-        #     #     inv.stdout = InvocationWorkerProcess.read_file(cls.stdout_file(inv.deployment_id))
-        #     #     inv.stderr = InvocationWorkerProcess.read_file(cls.stderr_file(inv.deployment_id))
-        #     return inv
-        #
-        # except Exception in (FileNotFoundError, AttributeError):
-        #     return None
-        storage = Storage.create(".opera-api")
-        filename = "invocation-{}.json".format(job_id)
-        try:
-            dump = storage.read_json(filename)
-        except FileNotFoundError:
-            return None
-        return Invocation.from_dict(dump)
+        inv = PostgreSQL.get_build_status(job_id)
+        return inv
 
     @classmethod
     def save_invocation(cls, inv: Invocation):
-        # TODO database
-        # SQL_database.update_deployment_log(invocation_id, inv)
-        storage = Storage.create(".opera-api")
-        filename = "invocation-{}.json".format(inv.invocation_id)
-        dump = json.dumps(inv.to_dict(), cls=image_builder_util.UUIDEncoder)
-        storage.write(dump, filename)
+        PostgreSQL.update_build_status(inv)

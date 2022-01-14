@@ -4,6 +4,7 @@ import connexion
 
 from image_builder.api.log import get_logger
 from image_builder.api.openapi import encoder
+from image_builder.api.service.sqldb_service import PostgreSQL
 from image_builder.api.settings import Settings
 
 DEBUG = os.getenv("DEBUG", "false") == "true"
@@ -12,6 +13,7 @@ Settings.load_settings()
 
 
 def main():
+    PostgreSQL.initialize()
 
     if DEBUG:
         logger.info("Running in debug mode: flask backend.")

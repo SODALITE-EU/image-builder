@@ -6,7 +6,7 @@ RUN /build/generate.sh
 FROM python:3.8.12-alpine3.13 as python-builder
 WORKDIR /app
 COPY requirements.txt .
-RUN export BUILD_PREREQS="gcc musl-dev libffi-dev openssl-dev cargo" \
+RUN export BUILD_PREREQS="gcc musl-dev libffi-dev postgresql-dev openssl-dev cargo" \
     && apk add --no-cache $BUILD_PREREQS \
     && pip3 install --no-cache-dir wheel \
    #  && pip3 install --user --no-warn-script-location -r requirements.txt
@@ -25,7 +25,7 @@ FROM python:3.8.12-alpine3.13
 
 # install system-packages
 # TODO try to remove as much as possible of system packages
-RUN export PACKAGES="gcc musl-dev libffi-dev openssl-dev cargo git bash tar openssh-client qemu img" \
+RUN export PACKAGES="gcc musl-dev libffi-dev postgresql-dev openssl-dev cargo git bash tar openssh-client qemu img" \
     && apk add --no-cache $PACKAGES
 
 # copy python packages
