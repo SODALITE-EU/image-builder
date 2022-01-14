@@ -13,11 +13,32 @@ services:
       AUTH_API_KEY: test
       DEBUG: "true"
       LOG_LEVEL: debug
+      IMAGEBUILDER_DATABASE_IP: postgres
+      IMAGEBUILDER_DATABASE_NAME: postgres
+      IMAGEBUILDER_DATABASE_USER: postgres
+      IMAGEBUILDER_DATABASE_PASSWORD: password
     labels:
       - "traefik.enable=true"
       - "traefik.http.services.api.loadbalancer.server.port=8080"
       - "traefik.http.routers.api.rule=PathPrefix(`/`)"
       - "traefik.http.routers.api.entrypoints=web"
+
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=postgres
+      - POSTGRES_PORT=5432
+#    volumes:
+#      - $HOME/docker/volumes/postgres:/var/lib/postgresql/data
+    ports:
+    - 5432:5432
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.services.postgres.loadbalancer.server.port=5432"
+      - "traefik.tcp.routers.postgres.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.postgres.entrypoints=postgres"
 
   proxy:
     image: library/traefik:v2.3.4
@@ -34,6 +55,7 @@ services:
       - "--entrypoints.traefik.address=:8081"
     depends_on:
       - api
+      - postgres
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 #      - ./nginx.conf:/etc/nginx/nginx.conf:ro
