@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: image-builder
-        image: sodaliteh2020/image-builder-api:k8s3
+        image: sodaliteh2020/image-builder-api:latest
         ports:
         - containerPort: 8080
           name: server
