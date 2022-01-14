@@ -96,6 +96,12 @@
       when: source.git_repo.dockerfile is defined and source.git_repo.dockerfile is not none
 
     # image variants configuration
+    - name: Extract FROM instruction from dockerfile
+      block:
+        - shell: "grep -n 'FROM' {{ dockerfile_path }} | grep -Eo '^[^:]+'"
+          register: from_data
+        - set_fact:
+            from_line_number: "{{ from_data.stdout }}"
 
     - name: Preparing Dockerfile for BASE_IMAGE injection
       # Match both 'FROM base' and 'FROM base as xxx' cases, with and without :version specifications.
@@ -105,15 +111,16 @@
       # FROM ${BASE_IMAGE} as builder
       #
       # allowing the BASE_IMAGE to be overloaded by the image builder when building image variants.
-      shell: sed -i -e '1 s/\(FROM\) \([a-z:]*\)\([ \t].*$\)/ARG BASE_IMAGE=\2\n\1 \${BASE_IMAGE}\3/' \
-                    -e '1 s/\(FROM\) \([a-z:].*$\)/ARG BASE_IMAGE=\2\n\1 \${BASE_IMAGE}/' \
-                   "{{ dockerfile_path }}"
+      # works also if 'FROM' is not on the first line (due to comment on a line before)
+      shell: sed -i -e "{{ from_line_number }} s/\(FROM\) \([^ ]*\)\(.*$\)/ARG BASE_IMAGE=\2\n\1 \${BASE_IMAGE}\3/" \
+                    -e "{{ from_line_number }} s/\(FROM\) \([a-z:].*$\)/ARG BASE_IMAGE=\2\n\1 \${BASE_IMAGE}/" \
+                    "{{ dockerfile_path }}"
       args:
         # sed does a better job of this than the replace module, silence warnings about its use.
         warn: false
 
     - name: Extract default base image from Dockerfile
-      shell: sed q "{{ dockerfile_path }}" | sed -e 's/^.*=//g'
+      shell: sed "{{ from_line_number }}q;d" "{{ dockerfile_path }}" | sed -e 's/^.*=//g'
       register: base_image_data
       args:
         warn: false
