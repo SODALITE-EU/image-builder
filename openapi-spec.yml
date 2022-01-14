@@ -166,6 +166,7 @@ components:
     Target:
       required:
         - images
+        - registry
       type: object
       properties:
         images:
@@ -174,6 +175,26 @@ components:
           minItems: 1
           items:
             $ref: '#/components/schemas/DockerImage'
+        registry:
+          type: object
+          description: Target Registry. If ommited, default registry will be used.
+          allOf:
+            - $ref: '#/components/schemas/TargetRegistry'
+    TargetRegistry:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          description: Url to registry server. Can be IP or CNAME.
+          example: docker.io
+        username:
+          type: string
+          description: Username to login into Image Registry server
+        password:
+          type: string
+          description: Password to login into Image Registry server
     DockerImage:
       required:
       - image
