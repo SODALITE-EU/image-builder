@@ -13,8 +13,8 @@ services:
       AUTH_API_KEY: test
       DEBUG: "true"
       LOG_LEVEL: debug
-      IMAGEBUILDER_DATABASE_IP: postgres
-      IMAGEBUILDER_DATABASE_NAME: postgres
+      IMAGEBUILDER_DATABASE_URL: postgres
+      IMAGEBUILDER_DATABASE_DB: postgres
       IMAGEBUILDER_DATABASE_USER: postgres
       IMAGEBUILDER_DATABASE_PASSWORD: password
     labels:
@@ -22,6 +22,8 @@ services:
       - "traefik.http.services.api.loadbalancer.server.port=8080"
       - "traefik.http.routers.api.rule=PathPrefix(`/`)"
       - "traefik.http.routers.api.entrypoints=web"
+    depends_on:
+      - postgres
 
   postgres:
     image: postgres

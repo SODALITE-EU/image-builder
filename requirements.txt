@@ -2,7 +2,7 @@
 opera==0.6.8
 
 # docker
-docker==5.0.3
+# docker==5.0.3
 
 # openapi
 connexion[swagger-ui] == 2.7.0

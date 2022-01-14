@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: image-builder-api
-#  annotations:
-#    container.apparmor.security.beta.kubernetes.io/img: unconfined
-#    container.seccomp.security.alpha.kubernetes.io/img: unconfined
+  annotations:
+    container.apparmor.security.beta.kubernetes.io/image-builder: unconfined
+    container.seccomp.security.alpha.kubernetes.io/image-builder: unconfined
   labels:
     app: image-builder
 spec:
@@ -19,30 +19,28 @@ spec:
     spec:
       containers:
       - name: image-builder
-        image: sodaliteh2020/image-builder-api:k8s2
+        image: sodaliteh2020/image-builder-api:k8s3
         ports:
         - containerPort: 8080
           name: server
           protocol: TCP
         env:
+          # ---- remove in production ---
           - name: AUTH_API_KEY
             value: test
-          - name: DEBUG
-            value: "false"
+          # ---- end remove in production ---
+
+          # --- fill with keycloak values ---
+          - name: OIDC_INTROSPECTION_ENDPOINT
+            value: http://oicd-enpoindt.com
+          - name: OIDC_CLIENT_ID
+            value: fixmeClientId
+          - name: OIDC_CLIENT_SECRET
+            value: fixmeClientSecret
+          # --- end fill with keycloak values ---
+
           - name: LOG_LEVEL
             value: debug
-          # ----- remove start -------------
-          - name: IMAGEBUILDER_DATABASE_NAME
-            valueFrom:
-              secretKeyRef:
-                name: postgres-secret
-                key: DB
-          - name: IMAGEBUILDER_DATABASE_IP
-            valueFrom:
-              configMapKeyRef:
-                name: postgres-url
-                key: db_ip
-          # ----- remove end -------------
           - name: IMAGEBUILDER_DATABASE_URL
             valueFrom:
               configMapKeyRef:
@@ -52,8 +50,8 @@ spec:
           - prefix: IMAGEBUILDER_DATABASE_
             secretRef:
               name: postgres-secret
-#        securityContext:
-#          procMount: Unmasked
+        securityContext:
+          procMount: Unmasked
 
 ---
 apiVersion: v1
@@ -68,4 +66,7 @@ spec:
       protocol: TCP
       targetPort: server
   type: NodePort
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 1
 

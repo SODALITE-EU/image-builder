@@ -4,8 +4,9 @@ import connexion
 
 from image_builder.api.log import get_logger
 from image_builder.api.openapi import encoder
-from image_builder.api.service.sqldb_service import PostgreSQL
+from image_builder.api.service.sqldb_service import PostgreSQL, SqlDBFailedException
 from image_builder.api.settings import Settings
+from time import sleep
 
 DEBUG = os.getenv("DEBUG", "false") == "true"
 logger = get_logger(__name__)
@@ -13,7 +14,16 @@ Settings.load_settings()
 
 
 def main():
-    PostgreSQL.initialize()
+    attempts = 0
+    while attempts < 10:
+        try:
+            PostgreSQL.initialize()
+            logger.info("Successfully connected to database")
+            break
+        except SqlDBFailedException as e:
+            attempts += 1
+            sleep(1)
+            logger.warning(e)
 
     if DEBUG:
         logger.info("Running in debug mode: flask backend.")
