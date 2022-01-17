@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+import copy
 
 from image_builder.api.log import get_logger
 
@@ -38,12 +39,16 @@ class Settings:
             'connect_timeout': int(os.getenv("IMAGEBUILDER_DATABASE_TIMEOUT", '3'))
         }
 
+        # prepare sql_config for printing
+        __debug_sql_config = copy.deepcopy(Settings.sql_config)
+        __debug_sql_config['password'] = '****'
+
         logger.debug(json.dumps({
             "oicd_config": {
                 "introspection_endpoint": Settings.oidc_introspection_endpoint_uri,
                 "client_id": Settings.oidc_client_id,
-                "client_secret": Settings.oidc_client_secret,
+                "client_secret": Settings.oidc_client_secret if Settings.oidc_client_secret == "" else "****",
             },
             "auth_api_key": Settings.apiKey,
-            "sql_config": Settings.sql_config,
+            "sql_config": __debug_sql_config,
         }, indent=2))
