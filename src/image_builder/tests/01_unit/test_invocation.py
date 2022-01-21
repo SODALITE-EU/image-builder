@@ -19,9 +19,12 @@ class MockWorker:
 
 class TestInvocationService:
 
-    def test_save_load_invocation(self, generic_invocation: Invocation):
+    def test_save_load_invocation(self, generic_invocation: Invocation, mocker):
+
         inv = generic_invocation
-        inv.invocation_id = uuid.uuid4()
+        mocker.patch('image_builder.api.service.invocation_service.InvocationService.load_invocation',
+                     return_value=generic_invocation)
+        mocker.patch('image_builder.api.service.sqldb_service.PostgreSQL.connection')
         InvocationService.save_invocation(inv)
         inv_new = InvocationService.load_invocation(inv.invocation_id)
         assert_that(inv_new.to_dict()).contains_only(*inv.to_dict().keys())
@@ -29,6 +32,7 @@ class TestInvocationService:
     def test_invoke(self, mocker, monkeypatch, generic_build_params: BuildParams, generic_invocation: Invocation):
 
         mocker.patch('multiprocessing.Queue', return_value=None)
+        mocker.patch('image_builder.api.service.sqldb_service.PostgreSQL.connection')
         mocker.patch('image_builder.api.service.invocation_service.InvocationService.load_invocation')
         mocker.patch('image_builder.api.service.invocation_service.InvocationWorkerProcess', new=MockWorker)
         inv_service = InvocationService()

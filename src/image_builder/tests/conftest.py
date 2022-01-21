@@ -153,7 +153,10 @@ def generic_build_params():
                     "image": "xopera-rest-api",
                     "tag": "latest"
                 }
-            ]
+            ],
+            "registry": {
+                "url": "localhost:5000"
+            }
         }
     })
 
@@ -175,7 +178,10 @@ def generic_invocation():
                     "image": "xopera-rest-api",
                     "tag": "latest"
                 }
-            ]
+            ],
+            "registry": {
+                "url": "localhost:5000"
+            }
         }
     })
     inv.state = InvocationState.PENDING

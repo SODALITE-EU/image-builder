@@ -17,7 +17,10 @@ class TestBuild:
                     "image": "xopera-rest-api",
                     "tag": "latest"
                 }
-            ]
+            ],
+            "registry": {
+                "url": "localhost:5000"
+            }
         }
     }
 
@@ -26,6 +29,7 @@ class TestBuild:
         mocker.patch('image_builder.api.service.invocation_service.InvocationService.invoke', new=mock_invoke)
 
         resp = client.post("/build/", data=json.dumps(self.build_data), content_type='application/json')
+        print(resp.json)
         assert resp.status_code == 202
         mock_invoke.assert_called_with(generic_build_params)
 

@@ -1,7 +1,7 @@
 pipeline {
     agent { label 'docker-slave' }
        environment {
-       docker_registry_ip = credentials('jenkins-docker-registry-ip')
+//        docker_registry_ip = credentials('jenkins-docker-registry-ip')
        OS_PROJECT_DOMAIN_NAME = "Default"
        OS_USER_DOMAIN_NAME = "Default"
        OS_PROJECT_NAME = "orchestrator"
@@ -82,7 +82,7 @@ pipeline {
                         pip3 install --no-cache-dir -r requirements.txt
                         ./generate.sh
                         cd src/
-                        python3 -m pytest --registry_ip $docker_registry_ip image_builder --pyargs -s --junitxml=results.xml --cov=./image_builder/api/ --cov=./image_builder/tests/ --cov=./image_builder/api/settings --cov=./image_builder/api/service --cov=./image_builder/api/util --cov=./image_builder/api/controllers --cov-report xml
+                        python3 -m pytest image_builder -k /tests/01_unit --pyargs -s --junitxml=results.xml --cov=./image_builder/api/ --cov=./image_builder/tests/ --cov=./image_builder/api/settings --cov=./image_builder/api/service --cov=./image_builder/api/util --cov=./image_builder/api/controllers --cov-report xml
                     """
                 junit 'src/results.xml'
             }
