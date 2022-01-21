@@ -11,9 +11,14 @@
   "target": {
     "images": [
       {
-        "image": "snow-mask-computation",
+        "image": "repo/snow-mask-computation",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }

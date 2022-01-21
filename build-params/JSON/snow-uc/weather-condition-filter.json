@@ -11,9 +11,14 @@
   "target": {
     "images": [
       {
-        "image": "snow-weather-condition-filter",
+        "image": "repo/snow-weather-condition-filter",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }

@@ -8,6 +8,9 @@ source:
     workdir: .
 target:
   images:
-  - image: snow-weather-condition-filter
+  - image: repo/snow-weather-condition-filter
     tag: latest
-  registry_ip: localhost:5000
+  registry:
+    password: password
+    url: docker.io
+    username: user

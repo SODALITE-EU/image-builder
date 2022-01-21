@@ -10,6 +10,11 @@
         "image": "adaptant/edgetpu-exporter",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }

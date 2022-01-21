@@ -15,6 +15,11 @@
         "tag": "go1.13",
         "base": "golang:1.13"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }

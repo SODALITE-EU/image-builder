@@ -9,9 +9,14 @@
   "target": {
     "images": [
       {
-        "image": "tests/git-2",
+        "image": "repository/git-2",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }

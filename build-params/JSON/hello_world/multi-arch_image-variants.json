@@ -7,7 +7,7 @@
   "target": {
     "images": [
       {
-        "image": "tests/image_variants_platforms",
+        "image": "repository/image_variants_platforms",
         "tag": "latest",
         "platforms": [
           "linux/amd64",
@@ -20,7 +20,7 @@
         ]
       },
       {
-        "image": "tests/image_variants_platforms",
+        "image": "repository/image_variants_platforms",
         "tag": "python-3.8",
         "base": "python:3.8-alpine",
         "platforms": [
@@ -30,6 +30,11 @@
           "linux/arm/v6"
         ]
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }

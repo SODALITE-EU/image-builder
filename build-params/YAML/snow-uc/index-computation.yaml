@@ -8,6 +8,9 @@ source:
     workdir: .
 target:
   images:
-  - image: snow-index-computation
+  - image: repo/snow-index-computation
     tag: latest
-  registry_ip: localhost:5000
+  registry:
+    password: password
+    url: docker.io
+    username: user

@@ -5,6 +5,9 @@ source:
     url: https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/python_build_context/Dockerfile
 target:
   images:
-  - image: tests/build-context
+  - image: repository/build-context
     tag: latest
-  registry_ip: localhost:5000
+  registry:
+    password: password
+    url: docker.io
+    username: user

@@ -11,9 +11,14 @@
   "target": {
     "images": [
       {
-        "image": "snow-webcam-crawler",
+        "image": "repo/snow-webcam-crawler",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }

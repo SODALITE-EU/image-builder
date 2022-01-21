@@ -11,9 +11,14 @@
   "target": {
     "images": [
       {
-        "image": "snow-panorama-generation",
+        "image": "repo/snow-panorama-generation",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }

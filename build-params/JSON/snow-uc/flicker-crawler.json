@@ -11,9 +11,14 @@
   "target": {
     "images": [
       {
-        "image": "snow-flicker-aggregator",
+        "image": "repo/snow-flicker-aggregator",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }

@@ -10,9 +10,14 @@
   "target": {
     "images": [
       {
-        "image": "tests/build-context",
+        "image": "repository/build-context",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }

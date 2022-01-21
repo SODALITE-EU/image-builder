@@ -6,7 +6,7 @@ source:
     workdir: .
 target:
   images:
-  - image: tests/image_variants_platforms
+  - image: repository/image_variants_platforms
     platforms:
     - linux/amd64
     - linux/386
@@ -17,11 +17,14 @@ target:
     - linux/arm/v6
     tag: latest
   - base: python:3.8-alpine
-    image: tests/image_variants_platforms
+    image: repository/image_variants_platforms
     platforms:
     - linux/amd64
     - linux/arm64
     - linux/arm/v7
     - linux/arm/v6
     tag: python-3.8
-  registry_ip: localhost:5000
+  registry:
+    password: password
+    url: docker.io
+    username: user

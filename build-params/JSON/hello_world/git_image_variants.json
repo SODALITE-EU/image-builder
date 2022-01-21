@@ -6,15 +6,20 @@
   },
   "target": {
     "images": [
-    {
-      "image": "tests/image_variants",
-      "tag": "latest"
-    },
-    {
-      "image": "tests/image_variants",
-      "tag": "python-3.8",
-      "base": "python:3.8-alpine"
+      {
+        "image": "repository/image_variants",
+        "tag": "latest"
+      },
+      {
+        "image": "repository/image_variants",
+        "tag": "python-3.8",
+        "base": "python:3.8-alpine"
+      }
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
     }
-  ]
   }
 }

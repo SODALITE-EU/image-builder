@@ -7,7 +7,7 @@
   "target": {
     "images": [
       {
-        "image": "tests/platforms",
+        "image": "repository/platforms",
         "tag": "latest",
         "platforms": [
           "linux/amd64",
@@ -17,8 +17,13 @@
           "linux/s390x",
           "linux/arm/v7",
           "linux/arm/v6"
-    ]
+          ]
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }

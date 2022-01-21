@@ -11,9 +11,14 @@
   "target": {
     "images": [
       {
-        "image": "snow-daily-median-aggregator",
+        "image": "repo/snow-daily-median-aggregator",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }

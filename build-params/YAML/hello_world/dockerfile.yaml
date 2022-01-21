@@ -3,6 +3,9 @@ source:
     url: https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile
 target:
   images:
-  - image: tests/no_context
+  - image: repository/no_context
     tag: latest
-  registry_ip: localhost:5000
+  registry:
+    password: password
+    url: docker.io
+    username: user

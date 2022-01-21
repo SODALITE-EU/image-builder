@@ -6,6 +6,9 @@ source:
     workdir: .
 target:
   images:
-  - image: tests/git
+  - image: repository/git
     tag: latest
-  registry_ip: localhost:5000
+  registry:
+    password: password
+    url: docker.io
+    username: user

@@ -11,9 +11,14 @@
   "target": {
     "images": [
       {
-        "image": "snow-skyline-alignment",
+        "image": "repo/snow-skyline-alignment",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }

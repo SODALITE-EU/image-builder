@@ -11,4 +11,7 @@ target:
   - base: golang:1.13
     image: adaptant/edgetpu-exporter
     tag: go1.13
-  registry_ip: localhost:5000
+  registry:
+    password: password
+    url: docker.io
+    username: user

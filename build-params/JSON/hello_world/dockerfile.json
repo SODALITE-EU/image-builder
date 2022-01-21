@@ -7,9 +7,14 @@
   "target": {
     "images": [
       {
-        "image": "tests/no_context",
+        "image": "repository/no_context",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }

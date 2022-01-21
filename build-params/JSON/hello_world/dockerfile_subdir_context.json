@@ -11,9 +11,14 @@
   "target": {
     "images": [
       {
-        "image": "tests/subdir_context",
+        "image": "repository/subdir_context",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }

@@ -6,9 +6,12 @@ source:
     workdir: .
 target:
   images:
-  - image: tests/image_variants
+  - image: repository/image_variants
     tag: latest
   - base: python:3.8-alpine
-    image: tests/image_variants
+    image: repository/image_variants
     tag: python-3.8
-  registry_ip: localhost:5000
+  registry:
+    password: password
+    url: docker.io
+    username: user

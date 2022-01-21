@@ -6,7 +6,7 @@ source:
     workdir: .
 target:
   images:
-  - image: tests/platforms
+  - image: repository/platforms
     platforms:
     - linux/amd64
     - linux/386
@@ -16,4 +16,7 @@ target:
     - linux/arm/v7
     - linux/arm/v6
     tag: latest
-  registry_ip: localhost:5000
+  registry:
+    password: password
+    url: docker.io
+    username: user

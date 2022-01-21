@@ -11,9 +11,14 @@
   "target": {
     "images": [
       {
-        "image": "snow-mountain-relevance-classifier",
+        "image": "repo/snow-mountain-relevance-classifier",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }

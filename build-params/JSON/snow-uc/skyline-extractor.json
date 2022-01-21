@@ -11,9 +11,14 @@
   "target": {
     "images": [
       {
-        "image": "snow-skyline-extractor",
+        "image": "repo/snow-skyline-extractor",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }
