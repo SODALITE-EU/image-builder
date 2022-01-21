@@ -82,7 +82,7 @@ pipeline {
                         pip3 install --no-cache-dir -r requirements.txt
                         ./generate.sh
                         cd src/
-                        python3 -m pytest image_builder -k /tests/01_unit --pyargs -s --junitxml=results.xml --cov=./image_builder/api/ --cov=./image_builder/tests/ --cov=./image_builder/api/settings --cov=./image_builder/api/service --cov=./image_builder/api/util --cov=./image_builder/api/controllers --cov-report xml
+                        python3 -m pytest image_builder -k /tests/01_unit --pyargs -s --junitxml=results.xml --cov=./image_builder/api/ --cov=./image_builder/tests/01_unit --cov=./image_builder/api/settings --cov=./image_builder/api/service --cov=./image_builder/api/util --cov=./image_builder/api/controllers --cov-report xml
                     """
                 junit 'src/results.xml'
             }
