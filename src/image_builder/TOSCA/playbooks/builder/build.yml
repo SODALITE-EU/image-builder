@@ -132,6 +132,17 @@
     - set_fact:
         registry_server: "{{ target.registry.url if 'docker.io' not in target.registry.url else '' }}"
 
+    - name: Remove previous config
+      block:
+        - file:
+            state: directory
+            path: ~/.docker
+        - copy:
+            dest: ~/.docker/config.json
+            content: '{
+                              "auths": {}
+                      }'
+
     - name: Login to Registry
       ansible.builtin.shell:
         cmd: "echo '{{ target.registry.password }}' | img login -u {{ target.registry.username }}  {{ registry_server }} --password-stdin"

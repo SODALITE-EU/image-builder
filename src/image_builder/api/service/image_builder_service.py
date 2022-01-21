@@ -11,6 +11,7 @@ from image_builder.api.log import get_logger
 from image_builder.api.openapi.models import Invocation, BuildParams
 from image_builder.api.settings import Settings
 from image_builder.api.util import image_builder_util
+import copy
 
 logger = get_logger(__name__)
 
@@ -73,7 +74,7 @@ def mask_password(obj: dict):
                 obj_list[i] = replace_in_list(item, key, replace_value)
         return obj_list
 
-    return replace_in_dict(obj, 'password', '****')
+    return replace_in_dict(copy.deepcopy(obj), 'password', '****')
 
 
 def transform_build_params(data: BuildParams):
