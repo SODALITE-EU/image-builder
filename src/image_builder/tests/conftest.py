@@ -8,10 +8,10 @@ import uuid
 from contextlib import contextmanager
 from pathlib import Path
 
-import docker
+# import docker
 import psutil
 import pytest
-from docker import DockerClient
+# from docker import DockerClient
 from opera.commands.deploy import deploy_service_template as opera_deploy
 from opera.error import OperationError
 from opera.storage import Storage
@@ -24,31 +24,31 @@ tosca_path = (Path(__file__).parent.parent / "TOSCA")
 test_build_params = Path(__file__).parent / '02_integration' / 'build_params'
 
 
-def pytest_addoption(parser):
-    parser.addoption("--registry_ip", action="store", help='registry url', default='localhost')
+# def pytest_addoption(parser):
+#     parser.addoption("--registry_ip", action="store", help='registry url', default='localhost')
 
 
-def find_images(client: DockerClient, substring: str):
-    """
-    returns list of docker images with substring in image_tag
+# def find_images(client: DockerClient, substring: str):
+#     """
+#     returns list of docker images with substring in image_tag
+#
+#     """
+#     image_list = client.images.list()
+#
+#     image_list_filtered = [image for image in image_list if
+#                            any(substring in string for string in image.attrs['RepoTags'])]
+#     return image_list_filtered
 
-    """
-    image_list = client.images.list()
 
-    image_list_filtered = [image for image in image_list if
-                           any(substring in string for string in image.attrs['RepoTags'])]
-    return image_list_filtered
-
-
-def delete_images(client: DockerClient, substring: str):
-    """
-    deletes images with substring in image_tag
-
-    """
-    image_list = find_images(client, substring)
-
-    for image in image_list:
-        client.images.remove(image=image.id, force=True)
+# def delete_images(client: DockerClient, substring: str):
+#     """
+#     deletes images with substring in image_tag
+#
+#     """
+#     image_list = find_images(client, substring)
+#
+#     for image in image_list:
+#         client.images.remove(image=image.id, force=True)
 
 
 def json_to_yaml(test_path: Path, registry_ip: str):
@@ -64,69 +64,69 @@ def json_to_yaml(test_path: Path, registry_ip: str):
     return yaml_test
 
 
-def run_test(registry_ip: str, test_name: str):
-    """
-    Runs yaml test and returns exit_code
-    """
-    test_path = test_build_params / f'{test_name}.json'
-
-    inputs = json_to_yaml(test_path, registry_ip)
-    with cwd(tosca_path):
-        opera_storage = Storage.create('.opera')
-        try:
-            opera_deploy('docker_image_definition.yaml', inputs, opera_storage,
-                         verbose_mode=False, num_workers=1, delete_existing_state=True)
-        except OperationError:
-            return 1
-        finally:
-            shutil.rmtree((tosca_path / ".opera"), ignore_errors=True)
-    return 0
-
-
-def check_image(client: DockerClient, registry_ip: str, test_name: str):
-    """
-    Check if docker image(s) have been created
-    """
-
-    build_params_path = test_build_params / (test_name + '.json')
-    build_params = json.load(build_params_path.open('r'))
-
-    platforms = build_params['target'].get('platforms', ['linux/amd64'])
-    images = build_params['target'].get('images')
-
-    for image in images:
-        image_repository = f'{registry_ip}/{image["image"]}'
-        image_tag = f'{image_repository}:{image["tag"]}'
-
-        client.images.pull(repository=image_repository, all_tags=True)
-        registry_data = client.images.get_registry_data(image_repository)
-        image = client.images.get(image_repository)
-
-        if image_tag not in image.tags:
-            raise Exception(f'Tag "{image_tag}" not found in repository "{image_repository}"')
-
-        for platform in platforms:
-            if not registry_data.has_platform(platform):
-                raise Exception(f'Platform "{platform}" not found in repository "{image_repository}"')
+# def run_test(registry_ip: str, test_name: str):
+#     """
+#     Runs yaml test and returns exit_code
+#     """
+#     test_path = test_build_params / f'{test_name}.json'
+#
+#     inputs = json_to_yaml(test_path, registry_ip)
+#     with cwd(tosca_path):
+#         opera_storage = Storage.create('.opera')
+#         try:
+#             opera_deploy('docker_image_definition.yaml', inputs, opera_storage,
+#                          verbose_mode=False, num_workers=1, delete_existing_state=True)
+#         except OperationError:
+#             return 1
+#         finally:
+#             shutil.rmtree((tosca_path / ".opera"), ignore_errors=True)
+#     return 0
 
 
-@pytest.fixture(scope="package")
-def core_test_tools(pytestconfig):
-    client = docker.from_env()
+# def check_image(client: DockerClient, registry_ip: str, test_name: str):
+#     """
+#     Check if docker image(s) have been created
+#     """
+#
+#     build_params_path = test_build_params / (test_name + '.json')
+#     build_params = json.load(build_params_path.open('r'))
+#
+#     platforms = build_params['target'].get('platforms', ['linux/amd64'])
+#     images = build_params['target'].get('images')
+#
+#     for image in images:
+#         image_repository = f'{registry_ip}/{image["image"]}'
+#         image_tag = f'{image_repository}:{image["tag"]}'
+#
+#         client.images.pull(repository=image_repository, all_tags=True)
+#         registry_data = client.images.get_registry_data(image_repository)
+#         image = client.images.get(image_repository)
+#
+#         if image_tag not in image.tags:
+#             raise Exception(f'Tag "{image_tag}" not found in repository "{image_repository}"')
+#
+#         for platform in platforms:
+#             if not registry_data.has_platform(platform):
+#                 raise Exception(f'Platform "{platform}" not found in repository "{image_repository}"')
 
-    # remove previous test images
-    delete_images(client, 'tests')
 
-    # move tests to yaml
-    registry_ip = pytestconfig.getoption("registry_ip")
-
-    # run test
-    check_docker_image = functools.partial(check_image, client, registry_ip)
-    run_integration_test = functools.partial(run_test, registry_ip)
-    yield run_integration_test, check_docker_image
-
-    # cleanup
-    delete_images(client, 'tests')
+# @pytest.fixture(scope="package")
+# def core_test_tools(pytestconfig):
+#     client = docker.from_env()
+#
+#     # remove previous test images
+#     delete_images(client, 'tests')
+#
+#     # move tests to yaml
+#     registry_ip = pytestconfig.getoption("registry_ip")
+#
+#     # run test
+#     check_docker_image = functools.partial(check_image, client, registry_ip)
+#     run_integration_test = functools.partial(run_test, registry_ip)
+#     yield run_integration_test, check_docker_image
+#
+#     # cleanup
+#     delete_images(client, 'tests')
 
 
 @contextmanager
@@ -212,5 +212,5 @@ def kill_tree(pid, including_parent=True):
         parent.kill()
 
 
-if __name__ == '__main__':
-    check_image(client=docker.from_env(), registry_ip='10.10.43.193', test_name='test_02_no_context')
+# if __name__ == '__main__':
+#     check_image(client=docker.from_env(), registry_ip='10.10.43.193', test_name='test_02_no_context')
