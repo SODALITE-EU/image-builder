@@ -1,7 +1,7 @@
 # image-builder
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=SODALITE-EU_image-builder&metric=alert_status)](https://sonarcloud.io/dashboard?id=SODALITE-EU_image-builder)
 
-Image builder contains components needed to build images within the SODALITE platform.
+Image builder contains components needed to build images within the SODALITE platform. It encapsulates 
 
 # How to use image-builder
 
@@ -21,15 +21,20 @@ The simplest option for building docker images is to provide git repository with
   "target": {
     "images": [
       {
-        "image": "image_git",
+        "image": "repository/git",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }
 ```
 Image builder will assume repository contains Dockerfile in repo's root dir of default branch and will use it for workdir during building process.
-It will build image with tag `test_image:latest`, which will be pushed to preconfigured docker registry.
+It will build image with tag `test_image:latest`, which will be pushed to arbitrary OCI image registry.
 
 ### Additional options
 Additional options for git mode include:
@@ -52,10 +57,15 @@ Additional options for git mode include:
   "target": {
     "images": [
       {
-        "image": "image_git",
+        "image": "repository/git",
         "tag": "additional_options"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }
 ```
@@ -72,10 +82,15 @@ Image builder can build image from standalone dockerfile without any build conte
   "target": {
     "images": [
       {
-        "image": "dockerfile_no_context",
+        "image": "repository/no_context",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }
 ```
@@ -95,10 +110,15 @@ Image builder can add arbitrary git repository for build context. It will insert
   "target": {
     "images": [
       {
-        "image": "dockerfile_build-context",
+        "image": "repository/build-context",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }
 ```
@@ -128,10 +148,15 @@ Additional options for dockerfile mode:
   "target": {
     "images": [
       {
-        "image": "tests/subdir_context",
+        "image": "repository/subdir_context",
         "tag": "latest"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }
 
@@ -144,29 +169,34 @@ multi-stage builds. No modifications to the Dockerfile are required.
 
 This mode works in combination with any of other modes (dockerfile, git, tar).
 
-Following example will produce two images. `image_variants:latest` will be built with default bas image (specified 
+Following example will produce two images. `image_variants:latest` will be built with default base image (specified 
 in Dockerfile), while `image_variants:python-3.8` will be built on top of `python:3.8-alpine`.
 
 ```json
 
 {
   "source": {
-    "dockerfile": {
-      "url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile"
+    "git_repo": {
+      "url": "https://github.com/mihaTrajbaric/generic_repo.git"
     }
   },
   "target": {
     "images": [
       {
-        "image": "image_variants",
+        "image": "repository/image_variants",
         "tag": "latest"
       },
       {
-        "image": "image_variants",
+        "image": "repository/image_variants",
         "tag": "python-3.8",
         "base": "python:3.8-alpine"
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
 }
 
@@ -179,14 +209,14 @@ Following example will produce multiple variants of single image.
 ```json
 {
   "source": {
-    "dockerfile": {
-      "url": "https://raw.githubusercontent.com/mihaTrajbaric/image-builder-test-files/master/no_context/Dockerfile"
+    "git_repo": {
+      "url": "https://github.com/mihaTrajbaric/generic_repo.git"
     }
   },
   "target": {
     "images": [
       {
-        "image": "multi-arch",
+        "image": "repository/platforms",
         "tag": "latest",
         "platforms": [
           "linux/amd64",
@@ -196,11 +226,16 @@ Following example will produce multiple variants of single image.
           "linux/s390x",
           "linux/arm/v7",
           "linux/arm/v6"
-        ]
+          ]
       }
-    ]
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
+    }
   }
-}
+}  
 ```
 
 Platforms are defined on per-image basis, so every image variant can target different set of platforms:
@@ -213,26 +248,36 @@ Platforms are defined on per-image basis, so every image variant can target diff
   },
   "target": {
     "images": [
-    {
-      "image": "multi-arch",
-      "tag": "latest",
-      "platforms": [
-        "linux/s390x",
-        "linux/arm/v7",
-        "linux/arm/v6"
-      ]
-    },
-    {
-      "image": "multi-arch",
-      "tag": "python-3.8",
-      "base": "python:3.8-alpine",
-      "platforms": [
-        "linux/amd64",
-        "linux/386",
-        "linux/arm64"
-      ]
+      {
+        "image": "repository/image_variants_platforms",
+        "tag": "latest",
+        "platforms": [
+          "linux/amd64",
+          "linux/386",
+          "linux/arm64",
+          "linux/ppc64le",
+          "linux/s390x",
+          "linux/arm/v7",
+          "linux/arm/v6"
+        ]
+      },
+      {
+        "image": "repository/image_variants_platforms",
+        "tag": "python-3.8",
+        "base": "python:3.8-alpine",
+        "platforms": [
+          "linux/amd64",
+          "linux/arm64",
+          "linux/arm/v7",
+          "linux/arm/v6"
+        ]
+      }
+    ],
+    "registry": {
+      "url": "docker.io",
+      "username": "user",
+      "password": "password"
     }
-  ]
   }
 }
 ``` 
@@ -250,26 +295,26 @@ Image Builder REST API is build using [Openapi specification](openapi-spec.yml).
     - Ubuntu 20.04
     - python 3.8 or newer
      
-#### Access to docker registry
-
-In order to be able to push built images out, `image-builder` needs access to a docker registry. The registry
-itself can be public or private, with the appropriate access credentials provided. For development and testing
-purposes, a local registry can be trivially deployed using a pre-built image:
-
-```
-$ docker run -d -p 5000:5000 --restart=always --name registry registry:2
-```
-
-The locally deployed registry can then be accessed at `localhost:5000`. More information on deploying and
-securing an image registry is available [here](https://docs.docker.com/registry/deploying/).
-
-If the repository uses certificate-based client-server authentication, signed certificates must be installed in `/etc/docker/certs.d`.
-See the [docker docs](https://docs.docker.com/engine/security/certificates/) for more information.
 
 ### Config
-REST API's configuration can be set by setting following environmental variables:
+#### PostgreSQL connection
+Rest API is using PostgreSQL database. It is deployed with REST API as part of docker-compose template and TOSCA template.
+REST API can be configured to connect to any PostgreSQL instance by following environmental variables:
+- IMAGEBUILDER_DATABASE_IP=[database_ip]
+- IMAGEBUILDER_DATABASE_PORT=[database_port]
+- IMAGEBUILDER_DATABASE_NAME=[database_name]
+- IMAGEBUILDER_DATABASE_USER=[database_username]
+- IMAGEBUILDER_DATABASE_PASSWORD=[database_password]
+- IMAGEBUILDER_DATABASE_TIMEOUT=[database_timeout], optional
 
-    - REGISTRY_IP: IP of docker registry. Default: localhost
+PostgreSQL can be run as [docker container](https://hub.docker.com/_/postgres).
+
+#### OAuth
+Image Builder REST API uses OAuth 2.0 for authentication.
+
+It can be overridden by setting `AUTH_API_KEY` env var in image-builder-api
+container to key_name of choice. 
+This key must be added to request as `-H  "X-API-Key: [key_name]"`
     
 ### Local run
 To run locally, use [docker compose](docker-compose.yml) or [local TOSCA template](image-builder-rest-blueprint/docker-local/service.yaml) with compliant orchestrator. It was tested with [opera==0.6.6](https://pypi.org/project/opera/0.6.6/). Note that if you deploy image-builder with docker-compose, [multi-arch prerequisites](https://docs.docker.com/buildx/working-with-buildx/#build-multi-platform-images) need to be installed and configured.
