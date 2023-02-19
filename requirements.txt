@@ -19,3 +19,4 @@ pytest-mock
 assertpy
 validators
 psutil
+ansible>=7.0.0 # not directly required, pinned by Snyk to avoid a vulnerability
